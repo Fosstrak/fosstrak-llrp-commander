@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.fosstrak.llrp.commander.feature_1.1.1.qualifier.jar" id="org.fosstrak.llrp.commander.feature" version="1.1.1.qualifier">
+      <category name="org.fosstrak.llrp"/>
+   </feature>
+   <category-def name="org.fosstrak.llrp" label="Fosstrak LLRP Commander">
+      <description>
+         The Fosstrak LLRP Commander provides a graphical user interface to
+control RFID readers that support the LLRP protocol. The Fosstrak LLRP Commander allows users to assemble, send and receive LLRP messages without writing code.
+      </description>
+   </category-def>
+</site>

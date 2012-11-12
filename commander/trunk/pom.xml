@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<groupId>org.fosstrak.llrp.commander</groupId>
+	<artifactId>commander</artifactId>
+	<version>1.1.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<properties>
+		<tycho-version>0.16.0</tycho-version>
+	</properties>
+
+	<modules>
+		<module>org.fosstrak.llrp.commander.plugin</module>
+		<module>org.fosstrak.llrp.commander.plugin.tests</module>
+		<module>org.fosstrak.llrp.commander.feature</module>
+		<module>org.fosstrak.llrp.commander.update</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.fosstrak.llrp</groupId>
+			<artifactId>llrp-adaptor-integration</artifactId>
+			<version>1.1.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>helios</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/releases/juno</url>
+		</repository>
+	 <!--
+		<repository>
+			<id>development</id>
+			<layout>p2</layout>
+			<url>file:///c:/fosstrak/software/eclipseMirror/juno</url>
+		</repository>
+		-->
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<resolver>p2</resolver>
+					<pomDependencies>consider</pomDependencies>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
