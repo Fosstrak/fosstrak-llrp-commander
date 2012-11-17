@@ -39,3 +39,4 @@ Bundle-ClassPath: .,
  commons-digester-1.8.jar,
  commons-beanutils-1.7.0.jar,
  commons-beanutils-core-1.7.0.jar
+Bundle-ActivationPolicy: lazy

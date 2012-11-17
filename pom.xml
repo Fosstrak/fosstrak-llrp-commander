@@ -17,7 +17,7 @@
 
 	<modules>
 		<module>org.fosstrak.llrp.commander.plugin</module>
-		<module>org.fosstrak.llrp.commander.plugin.tests</module>
+		<!--<module>org.fosstrak.llrp.commander.plugin.tests</module>-->
 		<module>org.fosstrak.llrp.commander.feature</module>
 		<module>org.fosstrak.llrp.commander.update</module>
 	</modules>

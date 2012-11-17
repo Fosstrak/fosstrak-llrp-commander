@@ -21,12 +21,13 @@
 
 package org.fosstrak.llrp.commander;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
@@ -37,8 +38,9 @@ import org.fosstrak.llrp.commander.check.CheckEclipseProject;
 import org.fosstrak.llrp.commander.check.CheckRepository;
 import org.fosstrak.llrp.commander.check.HealthCheck;
 import org.fosstrak.llrp.commander.preferences.PreferenceConstants;
-import org.fosstrak.llrp.commander.util.Utility;
 import org.osgi.framework.BundleContext;
+
+import com.mysql.jdbc.StringUtils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -66,13 +68,10 @@ public class LLRPPlugin extends AbstractUIPlugin {
 	 * The constructor
 	 */
 	public LLRPPlugin() {
-		
-		/*
-		 * FIXME
-		String prop = Utility.findWithFullPath("/log4j.properties");
-    	// initialize the log4j facilities.
-    	PropertyConfigurator.configure(prop);
-    	*/
+		// initialize the log4j facilities.
+		File file = getResourceFile("log4j.xml");
+		String absolutePath = file.getAbsolutePath();
+    	DOMConfigurator.configure(absolutePath);
 	}
 
 	/*
@@ -80,13 +79,15 @@ public class LLRPPlugin extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception {
+		log.info("starting LLRP Commander Plugin...");
 		super.start(context);
 		plugin = this;
 		
 		IPreferenceStore store = LLRPPlugin.getDefault().getPreferenceStore();
 		String storedProjectName = store.getString(PreferenceConstants.P_PROJECT);
 		
-		if ((storedProjectName != null) || (!storedProjectName.equals(""))) {
+		if (!StringUtils.isEmptyOrWhitespaceOnly(storedProjectName)) {
+			log.debug("Restore stored project name.");
 			ResourceCenter.getInstance().setEclipseProjectName(storedProjectName);
 		}
 		
@@ -129,7 +130,7 @@ public class LLRPPlugin extends AbstractUIPlugin {
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
-		log.info("Stopping the Plug-In, and disposing resources...");
+		log.info("Stopping the LLRP Commander Plugin and disposing resources...");
 		
 		ResourceCenter.getInstance().getMessageBoxRefresh().stop();
 		plugin = null;
@@ -162,19 +163,20 @@ public class LLRPPlugin extends AbstractUIPlugin {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 	
-	public void getResourceFile(String aRelativePath) {
-		URL bundleRoot = getBundle().getEntry("/");
+	public File getResourceFile(String aRelativePath) {
+		URL bundleRoot = getBundle().getEntry(aRelativePath);
 		
 		try {
 			URL fileURL = FileLocator.toFileURL(bundleRoot);
 			java.io.File file = new java.io.File(fileURL.toURI());
 			
+			log.debug("Bundle location:" + file.getAbsolutePath());
+			return file;
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			log.debug("caught exception thus returning null", ioe);
 		} catch (URISyntaxException urie) {
-			urie.printStackTrace();
-		} 
-
-		//System.out.println("Bundle location:" + file.getAbsolutePath());
+			log.debug("caught exception thus returning null", urie);
+		}
+		return null;
 	}
 }
