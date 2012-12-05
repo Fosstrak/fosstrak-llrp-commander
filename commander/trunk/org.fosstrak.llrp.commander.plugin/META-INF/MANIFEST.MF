@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: org.fosstrak.llrp.commander.plugin
 Bundle-SymbolicName: org.fosstrak.llrp.commander.plugin;singleton:=true
 Bundle-Version: 1.1.1.qualifier
-Eclipse-BundleShape: dir
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,
