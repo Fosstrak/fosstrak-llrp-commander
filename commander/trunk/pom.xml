@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>org.fosstrak.llrp</groupId>
 			<artifactId>llrp-adaptor-integration</artifactId>
-			<version>1.1.1-SNAPSHOT</version>
+			<version>1.2.0</version>
 		</dependency>
 	</dependencies>
 
@@ -38,13 +38,27 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/releases/juno</url>
 		</repository>
-	 <!--
+		<!--
 		<repository>
 			<id>development</id>
 			<layout>p2</layout>
 			<url>file:///c:/fosstrak/software/eclipseMirror/juno</url>
 		</repository>
 		-->
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>daily</updatePolicy>
+				<checksumPolicy>warn</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>fosstrak-repository</id>
+			<name>Fosstrak repository</name>
+			<url>https://oss.sonatype.org/content/repositories/public/</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 
 	<build>
@@ -62,6 +76,14 @@
 				<configuration>
 					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<aggregate>true</aggregate>
 				</configuration>
 			</plugin>
 		</plugins>
