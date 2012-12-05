@@ -21,18 +21,11 @@
 
 package org.fosstrak.llrp.commander.util;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URLDecoder;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -69,34 +62,7 @@ public class LLRP {
 	
 	private static Logger log = Logger.getLogger(LLRP.class);
 
-	// FIXME: move this into a dedicated helper class.
-	private static boolean copyStream(final InputStream is, final OutputStream os) throws IOException  {
-			final byte[] buf = new byte[1024];
-
-			int len = 0;
-			while ((len = is.read(buf)) > 0) {
-				os.write(buf, 0, len);
-			}
-			is.close();
-			os.close();
-			return  true;
-	}
-
-	// FIXME: move this into a dedicated helper class.
-	private static void copyToFile(final JarFile jarFile, final String targetBaseFolder, final JarEntry entry) throws IOException  {
-		final String fn = targetBaseFolder + entry.getName();
-		log.debug(fn);
-		if (entry.isDirectory()) {
-			log.debug("creating new directory " + fn);
-			new File(fn).mkdirs();
-		} else {
-			log.debug("writing file " + fn);
-			copyStream(jarFile.getInputStream(entry), new FileOutputStream(fn));
-		}
-	}
-	
 	static {
-		String jaxBPackage = "org.llrp.ltkGenerator.generated";
 		try {
 			String target = System.getProperty("java.io.tmpdir") + "/";
 			log.debug(target);
@@ -105,21 +71,10 @@ public class LLRP {
 			log.debug(path);
 			String decodedPath = URLDecoder.decode(path, "UTF-8");
 			log.debug(decodedPath);
-			JarFile jarFile = new JarFile(new File(decodedPath));
-			Enumeration<JarEntry> entries = jarFile.entries();
-			while (entries.hasMoreElements()) {
-				final JarEntry entry = entries.nextElement();
-				log.debug(entry);
-				
-				if (entry.getName().startsWith(DEFINITIONS_NAME)) {
-					copyToFile(jarFile, target, entry);
-				} else {
-					log.debug("no match");
-				}
-			}
-			jarFile.close();
+			new JarFolderExtractor().extractDirectoryFromJar(decodedPath, DEFINITIONS_NAME, target);
 			
 			String namespacePrefix = "llrp";
+			String jaxBPackage = "org.llrp.ltkGenerator.generated";
 			String xmlPath = target + "/" + DEFINITIONS_NAME + "/Core/llrp-1x0-def.xml";
 			String xsdPath = target + "/" + DEFINITIONS_NAME + "/Core/llrp-1x0.xsd";
 			String[] extensions = {namespacePrefix + ";" + xmlPath + ";" + xsdPath};
