@@ -43,6 +43,9 @@ import org.fosstrak.llrp.commander.ResourceCenter;
 import org.fosstrak.llrp.commander.dialogs.SendMessageDialog;
 import org.fosstrak.llrp.commander.editors.graphical.GraphicalEditorPage;
 import org.fosstrak.llrp.commander.preferences.PreferenceConstants;
+import org.fosstrak.llrp.commander.provider.LLRPBinaryContentProvider;
+import org.fosstrak.llrp.commander.provider.LLRPBinaryLabelProvider;
+import org.fosstrak.llrp.commander.type.BinaryMessage;
 import org.llrp.ltk.exceptions.InvalidLLRPMessageException;
 import org.llrp.ltk.types.LLRPMessage;
 

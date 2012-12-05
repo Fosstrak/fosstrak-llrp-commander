@@ -19,42 +19,37 @@
  *
  */
 
-package org.fosstrak.llrp.commander.editors;
+package org.fosstrak.llrp.commander.xml.type;
 
-import org.apache.log4j.Logger;
-import org.eclipse.ui.editors.text.TextEditor;
-import org.fosstrak.llrp.commander.provider.XMLDocumentProvider;
+import org.eclipse.jface.text.rules.*;
+import org.eclipse.jface.text.*;
 import org.fosstrak.llrp.commander.util.ColorManager;
 
 /**
- * The XML Editor for LLRP in XML Format.
- * 
- * The editor extends Eclipse <code>TextEditor</code> by providing XML format
- * recognition.
- * 
+ * A <code>RuleBasedScanner</code> for XML text.
+ *
  * @author Haoning Zhang
  * @version 1.0
  */
-public class XMLEditor extends TextEditor {
-	
-	private ColorManager colorManager;
-
-	/**
-	 * Constructor, initial the ColorManager.
-	 */
-	public XMLEditor() {
-		super();
-		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new XMLConfiguration(colorManager));
-		setDocumentProvider(new XMLDocumentProvider());
-	}
+public class XMLScanner extends RuleBasedScanner {
 	
 	/**
-	 * Dispose the ColorManager before disposing it's parent.
+	 * Constructor, which initialize the scanning rules.
+	 * 
+	 * @param manager ColorManager instance.
 	 */
-	public void dispose() {
-		colorManager.dispose();
-		super.dispose();
-	}
+	public XMLScanner(ColorManager manager) {
+		IToken procInstr =
+			new Token(
+				new TextAttribute(
+					manager.getColor(IXMLColorConstants.PROC_INSTR)));
 
+		IRule[] rules = new IRule[2];
+		//Add rule for processing instructions
+		rules[0] = new SingleLineRule("<?", "?>", procInstr);
+		// Add generic whitespace rule.
+		rules[1] = new WhitespaceRule(new XMLWhitespaceDetector());
+
+		setRules(rules);
+	}
 }

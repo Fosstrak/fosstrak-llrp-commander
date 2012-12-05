@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: org.fosstrak.llrp.commander.commons.tests
+Bundle-SymbolicName: org.fosstrak.llrp.commander.commons.tests
+Bundle-Version: 1.1.1.qualifier
+Require-Bundle: org.junit4;bundle-version="4.0.0",
+ org.eclipse.core.runtime,
+ org.fosstrak.llrp.commander.commons;bundle-version="1.1.1",
+ org.apache.commons.lang;bundle-version="2.6.0",
+ org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1",
+ org.apache.velocity;bundle-version="1.5.0",
+ org.apache.xerces;bundle-version="2.9.0"
+Bundle-Vendor: ETH Zurich

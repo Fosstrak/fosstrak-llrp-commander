@@ -34,6 +34,13 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.fosstrak.llrp.commander.util.ColorManager;
+import org.fosstrak.llrp.commander.util.NonRuleBasedDamagerRepairer;
+import org.fosstrak.llrp.commander.xml.type.IXMLColorConstants;
+import org.fosstrak.llrp.commander.xml.type.XMLDoubleClickStrategy;
+import org.fosstrak.llrp.commander.xml.type.XMLPartitionScanner;
+import org.fosstrak.llrp.commander.xml.type.XMLScanner;
+import org.fosstrak.llrp.commander.xml.type.XMLTagScanner;
 
 /**
 * ...
