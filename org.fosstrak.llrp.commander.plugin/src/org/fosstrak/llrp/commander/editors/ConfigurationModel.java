@@ -70,25 +70,16 @@ public class ConfigurationModel {
 		
 	}
 
-	public List getCompletions(String prefix) {
+	public List<String> getCompletions(String prefix) {
 		
 		log.debug("Here55555");
 		
-		List completions = new LinkedList();
+		List<String> completions = new LinkedList<String>();
 	
 		for (int i = 0; i < appenders.length; i++) {
 			if (testCompletion(appenders[i], prefix))
 				completions.add(appenders[i]);
 		}
-		
-		/*
-		Iterator<String> reserve = reservedWords.iterator();
-		while (reserve.hasNext()) {
-			String word = reserve.next();
-			if (testCompletion(word, prefix))
-				completions.add(word);
-		}
-		*/
 		
 		for (int i = 0; i < baseProps.length; i++) {
 			if (testCompletion(baseProps[i], prefix))
@@ -104,7 +95,7 @@ public class ConfigurationModel {
 	}
 
 	private String[] parseCategory(String value) {
-		List appenders = new LinkedList();
+		List<String> appenders = new LinkedList<String>();
 
 		if (value != null) {
 			StringTokenizer st = new StringTokenizer(value, ",");

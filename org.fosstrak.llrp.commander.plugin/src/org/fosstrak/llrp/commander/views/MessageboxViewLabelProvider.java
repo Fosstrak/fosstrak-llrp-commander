@@ -28,8 +28,6 @@ import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.fosstrak.llrp.client.LLRPMessageItem;
 import org.fosstrak.llrp.client.repository.sql.DerbyRepository;
 import org.fosstrak.llrp.commander.ResourceCenter;
@@ -81,12 +79,7 @@ public class MessageboxViewLabelProvider extends LabelProvider implements
 		LLRPMessageItem msg = (LLRPMessageItem) aObj;
 		
 		if (aIndex == MessageboxView.COL_MSG_MARK) {
-			
-			ISharedImages sharedImages =
-		         PlatformUI.getWorkbench().getSharedImages();
-			
-			log.debug("Mark value is " + msg.getMark());
-			
+			log.trace("Mark value is " + msg.getMark());
 			if (msg.getMark() == LLRPMessageItem.MARK_INCOMING) {
 				return ResourceCenter.getInstance().getImage("incomingMsg.gif");
 			} else {

@@ -23,6 +23,7 @@ package org.fosstrak.llrp.commander.editors.graphical;
 
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.fieldassist.ControlDecoration;
@@ -99,6 +100,9 @@ import org.llrp.ltkGenerator.generated.ParameterReference;
  *
  */
 public class LLRPDetailsPage implements IDetailsPage {
+
+	private static Logger log = Logger.getLogger(LLRPDetailsPage.class);
+	
 	private IManagedForm mform;
 	private Object input;
 	private LLRPTreeMaintainer treeMaintainer;
@@ -217,8 +221,10 @@ public class LLRPDetailsPage implements IDetailsPage {
 			// try to create a browser widget
 			Shell popUp = new Shell(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.SHELL_TRIM);
 			Browser browser = new Browser(popUp, SWT.NONE);
+			log.trace("was able to create the browser" + browser);
 		} catch (SWTError e) {
 			// browser widget is not available on this platform -> don't provide "description" action
+			log.info("browser widget is not available on this platform -> thus description action is not provided.");
 			return null;
 		}
 		Action descriptionAction = new Action(){
@@ -292,7 +298,7 @@ public class LLRPDetailsPage implements IDetailsPage {
 			public void widgetSelected(SelectionEvent e) {
 				if (input != null){
 					LLRPEnumeration field = (LLRPEnumeration) treeMaintainer.getField(input, fieldDefinition.getName());
-					Class fieldClass;
+					Class<?> fieldClass;
 					try {
 						fieldClass = Class.forName("org.llrp.ltk.generated.enumerations." + fieldDefinition.getEnumeration());
 						field = (LLRPEnumeration) fieldClass.getConstructor(new Class[0]).newInstance(new Object[0]);
@@ -408,6 +414,7 @@ public class LLRPDetailsPage implements IDetailsPage {
 		final TableViewer tableViewer = new TableViewer(table);
 		
 		tableViewer.setContentProvider(new IStructuredContentProvider(){
+			@SuppressWarnings("unchecked")
 			public Object[] getElements(Object inputElement) {
 				if (inputElement instanceof java.util.List){
 					return ((java.util.List<LLRPParameter>) inputElement).toArray(new Object[0]);
@@ -512,6 +519,7 @@ public class LLRPDetailsPage implements IDetailsPage {
 			Object o = treeMaintainer.getChild(input, childName);
 			if (LLRP.canOccurMultipleTimes(treeMaintainer.getDefinition(input), childName)){
 				// fill table
+				@SuppressWarnings("unchecked")
 				java.util.List<LLRPParameter> parameterList = (java.util.List<LLRPParameter>) o;
 				tableViewers.get(tableViewerIndex).setInput(parameterList);
 				

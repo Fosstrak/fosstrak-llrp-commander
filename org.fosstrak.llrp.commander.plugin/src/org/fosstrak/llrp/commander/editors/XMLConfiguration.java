@@ -21,11 +21,10 @@
 
 package org.fosstrak.llrp.commander.editors;
 
-import org.apache.log4j.Logger;
-import org.eclipse.swt.SWT;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
@@ -33,7 +32,7 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.swt.SWT;
 import org.fosstrak.llrp.commander.util.ColorManager;
 import org.fosstrak.llrp.commander.util.NonRuleBasedDamagerRepairer;
 import org.fosstrak.llrp.commander.xml.type.IXMLColorConstants;

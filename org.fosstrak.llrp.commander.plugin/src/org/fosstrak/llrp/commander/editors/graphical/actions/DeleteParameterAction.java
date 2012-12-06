@@ -63,6 +63,7 @@ public class DeleteParameterAction extends Action implements ISelectionChangedLi
 		this.block = block;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run(){
 		LLRPParameter parameterToDelete = (LLRPParameter) selection.getFirstElement();

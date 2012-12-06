@@ -62,9 +62,10 @@ public class AddParameterAction extends Action implements IWorkbenchAction {
 		this.parameterName = parameterName;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run(){
-		Class parameterClass;
+		Class<?> parameterClass;
 		try {
 			parameterClass = Class.forName("org.llrp.ltk.generated.parameters." + parameterName);
 			LLRPParameter subParameter = (LLRPParameter) parameterClass.getConstructor(new Class[0]).newInstance(new Object[0]);
