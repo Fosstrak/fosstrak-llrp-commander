@@ -21,7 +21,6 @@
 
 package org.fosstrak.llrp.commander.editors;
 
-import org.apache.log4j.Logger;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.fosstrak.llrp.commander.provider.XMLDocumentProvider;
 import org.fosstrak.llrp.commander.util.ColorManager;

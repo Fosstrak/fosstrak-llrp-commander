@@ -23,13 +23,14 @@ package org.fosstrak.llrp.commander.util;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.llrp.ltk.types.LLRPEnumeration;
 import org.llrp.ltk.types.LLRPMessage;
 import org.llrp.ltk.types.LLRPParameter;
 import org.llrp.ltk.types.LLRPType;
+import org.llrp.ltkGenerator.generated.ChoiceDefinition;
 import org.llrp.ltkGenerator.generated.ChoiceParameterReference;
 import org.llrp.ltkGenerator.generated.FieldDefinition;
-import org.llrp.ltkGenerator.generated.ChoiceDefinition;
 
 /**
  * This class lets you generate default LLRP messages automatically.
@@ -38,6 +39,8 @@ import org.llrp.ltkGenerator.generated.ChoiceDefinition;
  *
  */
 public class LLRPFactory {
+	
+	private static Logger log = Logger.getLogger(LLRPFactory.class);
 	
 	private static final String MESSAGES_PACKAGE = "org.llrp.ltk.generated.messages";
 	private static final String PARAMETERS_PACKAGE = "org.llrp.ltk.generated.parameters";
@@ -56,7 +59,7 @@ public class LLRPFactory {
 		LLRPMessage message = null;
 		LLRPTreeMaintainer treeMaintainer = null;
 		try {
-			Class messageClass = Class.forName(MESSAGES_PACKAGE + "." + messageType);
+			Class<?> messageClass = Class.forName(MESSAGES_PACKAGE + "." + messageType);
 			message = (LLRPMessage) messageClass.getConstructor(new Class[0]).newInstance(new Object[0]);
 			treeMaintainer = new LLRPTreeMaintainer(message);
 			
@@ -64,7 +67,7 @@ public class LLRPFactory {
 			initializeMandatoryParameters(message, treeMaintainer);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not create llrp message", e);
 		}
 		return message;
 	}
@@ -72,14 +75,14 @@ public class LLRPFactory {
 	private static LLRPParameter createLLRPParameter(String parameterName, LLRPTreeMaintainer treeMaintainer){
 		LLRPParameter parameter = null;
 		try {
-			Class parameterTypeClass = Class.forName(PARAMETERS_PACKAGE + "." + parameterName);
+			Class<?> parameterTypeClass = Class.forName(PARAMETERS_PACKAGE + "." + parameterName);
 			parameter = (LLRPParameter) parameterTypeClass.getConstructor(new Class[0]).newInstance(new Object[0]);
 
 			initializeFields(parameter, treeMaintainer);
 			initializeMandatoryParameters(parameter, treeMaintainer);
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not create llrp parameter", e);
 		}
 		return parameter;
 	}
@@ -100,7 +103,7 @@ public class LLRPFactory {
 					try {
 						fieldValue = createLLRPType(fieldType, Integer.toString(rangeConstraint.getDefaultValue()));
 					} catch (Exception e) {
-						e.printStackTrace();
+						log.error("could not create llrp type", e);
 					}
 				}
 				else if (arrayConstraint != null){
@@ -114,7 +117,7 @@ public class LLRPFactory {
 						}
 						fieldValue = createLLRPType(fieldType, s);
 					} catch (Exception e) {
-						e.printStackTrace();
+						log.error("could not create llrp type", e);
 					}
 				}
 				else{
@@ -141,11 +144,12 @@ public class LLRPFactory {
 						parameterName = childName;
 					}
 					LLRPParameter parameter = createLLRPParameter(parameterName, treeMaintainer);
+					@SuppressWarnings("unchecked")
 					List<LLRPParameter> list = (List<LLRPParameter>) treeMaintainer.getChild(messageOrParameter, childName);
 					treeMaintainer.addChild(list, parameter);
 				}
 			}
-			else{
+			else {
 				if (LLRP.mustOccurAtLeastOnce(messageOrParameterDefinition, childName)){
 					String parameterName;
 					if (LLRP.isChoice(messageOrParameterDefinition, childName)){
@@ -166,10 +170,10 @@ public class LLRPFactory {
 	private static LLRPType createLLRPType(String typeName){
 		LLRPType lLRPType = null;
 		try {
-			Class fieldTypeClass = Class.forName(TYPES_PACKAGE + "." + typeName);
+			Class<?> fieldTypeClass = Class.forName(TYPES_PACKAGE + "." + typeName);
 			lLRPType = (LLRPType) fieldTypeClass.getConstructor(new Class[0]).newInstance(new Object[0]);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not create llrp type", e);
 		}
 		return lLRPType;
 	}
@@ -184,8 +188,8 @@ public class LLRPFactory {
 	 */
 	public static LLRPType createLLRPType(String typeName, String value) throws Exception{
 		LLRPType result = null;
-		if (!value.equals("")){
-			Class fieldTypeClass;
+		if (!value.equals("")) {
+			Class<?> fieldTypeClass;
 			fieldTypeClass =  Class.forName(TYPES_PACKAGE + "." + typeName);
 			result = (LLRPType) fieldTypeClass.getConstructor(new Class[]{String.class}).newInstance(new Object[]{value});
 		}
@@ -195,10 +199,10 @@ public class LLRPFactory {
 	private static LLRPEnumeration createLLRPEnumeration(String enumerationName){
 		LLRPEnumeration enumeration = null;
 		try {
-			Class enumerationClass = Class.forName(ENUMERATIONS_PACKAGE + "." + enumerationName);
+			Class<?> enumerationClass = Class.forName(ENUMERATIONS_PACKAGE + "." + enumerationName);
 			enumeration = (LLRPEnumeration) enumerationClass.getConstructor(new Class[0]).newInstance(new Object[0]);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not create llrp enumeration", e);
 		}
 		return enumeration;
 	}

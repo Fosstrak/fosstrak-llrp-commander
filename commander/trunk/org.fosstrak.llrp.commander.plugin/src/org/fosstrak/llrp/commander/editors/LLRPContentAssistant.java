@@ -21,9 +21,9 @@
 
 package org.fosstrak.llrp.commander.editors;
 
-import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -38,10 +38,12 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 * @author zhanghao
 *
 */
-public class LLRPContentAssistant implements IContentAssistProcessor {	
+public class LLRPContentAssistant implements IContentAssistProcessor {
 	
-	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
-			int documentOffset) {
+	
+	private static Logger log = Logger.getLogger(LLRPContentAssistant.class);
+	
+	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int documentOffset) {
 		ICompletionProposal[] proposals = null;
 		try {
 			IDocument document = viewer.getDocument();
@@ -50,17 +52,16 @@ public class LLRPContentAssistant implements IContentAssistProcessor {
 			String prefix = document.get(start, documentOffset - start);
 			
 			ConfigurationModel model = new ConfigurationModel(document.get());
-			List completions = model.getCompletions(prefix);
+			List<String> completions = model.getCompletions(prefix);
 
 			proposals = new CompletionProposal[completions.size()];
 			int i = 0;
-			for (Iterator iter = completions.iterator(); iter.hasNext();) {
-				String completion = (String) iter.next();
-				proposals[i++] = new CompletionProposal(completion, start,
-						documentOffset - start, completion.length());
+			
+			for (String completion : completions) {
+				proposals[i++] = new CompletionProposal(completion, start, documentOffset - start, completion.length());
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not compute proposals", e);
 		}
 
 		return proposals;

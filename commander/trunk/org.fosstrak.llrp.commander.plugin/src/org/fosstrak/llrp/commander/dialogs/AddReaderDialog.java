@@ -21,6 +21,7 @@
 
 package org.fosstrak.llrp.commander.dialogs;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,6 +42,8 @@ import org.fosstrak.llrp.adaptor.AdaptorManagement;
  *
  */
 public class AddReaderDialog extends ConnectDialog {
+	
+	private static Logger log = Logger.getLogger(AddReaderDialog.class);
 	
 	/** the index for the reader name in the values array. */
 	private static final int VALUE_READER_NAME = 0;
@@ -216,6 +219,7 @@ public class AddReaderDialog extends ConnectDialog {
 					try {
 						// try to parse the port.
 						final int port = Integer.parseInt(txt.getText());
+						log.trace("could parse port " + port);
 						ok.setEnabled(true);
 					} catch (Exception e) {
 						ok.setEnabled(false);
