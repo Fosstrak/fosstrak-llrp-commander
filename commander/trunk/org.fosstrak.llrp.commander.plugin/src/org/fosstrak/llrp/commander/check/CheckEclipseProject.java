@@ -166,58 +166,15 @@ public class CheckEclipseProject extends CheckItem {
 				    	file.create(new FileInputStream(sampleFile), true, progressMonitor);
 				    }
 				    
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("could not process the draft folder", e);
 				} 
 				
 				log.debug("fixed project");
 			}
-			
-//			IFolder sampleFolder = project.getFolder(ResourceCenter.SAMPLE_SUBFOLDER);
-//			if (!sampleFolder.exists()) {
-//				sampleFolder.create(true, true, progressMonitor);
-//				
-//				addReportItem("Subfolder '" + ResourceCenter.SAMPLE_SUBFOLDER + "' created.", CATEGORY_FIX);
-//				
-//			    URL bundleRoot = LLRPPlugin.getDefault().getBundle().getEntry("/sampleXML");
-//				
-//				try {
-//					URL fileURL = FileLocator.toFileURL(bundleRoot);
-//					File folderSource = new File(fileURL.getPath());
-//					
-//					FilenameFilter filter = new FilenameFilter() {
-//				        public boolean accept(File dir, String name) {
-//				            return name.endsWith(".llrp");
-//				        }
-//				    };
-//				    
-//				    String[] sampleFileNames = folderSource.list(filter);
-//				    
-//				    for (int i = 0; i < sampleFileNames.length; i ++) {
-//				    	String urlFile = fileURL.getPath() + "/" + sampleFileNames[i];
-//				    	File sampleFile = new File(urlFile);
-//				    	
-//				    	//String urlTargetFile = sampleFolder.getLocationURI() + "/" + sampleFileNames[i];
-//				    	//File sampleTargetFile = new File(urlTargetFile);
-//				    	
-//				    	IFile file = project.getFile(ResourceCenter.SAMPLE_SUBFOLDER + "/" + sampleFileNames[i]);
-//				    	
-//				    	file.create(new FileInputStream(sampleFile), true, progressMonitor);
-//				    	
-//				    	//copyFile(sampleFile, sampleTargetFile);
-//				    }
-//				    
-//				} catch (IOException ioe) {
-//					ioe.printStackTrace();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				} 
-//			}
 
 		} catch (CoreException coe) {
-			coe.printStackTrace();
+			log.error("received core exception", coe);
 		}
 	}
 	

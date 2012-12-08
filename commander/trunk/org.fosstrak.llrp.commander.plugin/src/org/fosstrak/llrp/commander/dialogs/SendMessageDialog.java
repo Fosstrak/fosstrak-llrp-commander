@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -65,6 +66,8 @@ import org.llrp.ltk.types.LLRPMessage;
  * @version 1.0
  */
 public class SendMessageDialog extends org.eclipse.jface.dialogs.Dialog {
+	
+	private static Logger log = Logger.getLogger(SendMessageDialog.class);
 	
 	// the previously selected readers
 	private Map<String, Set<String> > previouslySelected = 
@@ -173,9 +176,9 @@ public class SendMessageDialog extends org.eclipse.jface.dialogs.Dialog {
 				}
 			}
 		} catch (LLRPRuntimeException llrpe) {
-			llrpe.printStackTrace();
+			log.debug("issue while reading the names for reader and adaptors", llrpe);
 		} catch (RemoteException re) {
-			re.printStackTrace();
+			log.debug("issue while reading the names for reader and adaptors", re);
 		}
 		
 		// for all the currently available readers, check if they have been

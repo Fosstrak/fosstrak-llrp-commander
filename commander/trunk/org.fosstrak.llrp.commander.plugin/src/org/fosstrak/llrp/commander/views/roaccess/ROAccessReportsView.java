@@ -250,7 +250,7 @@ public class ROAccessReportsView extends TableViewPart implements MessageHandler
 					MessageDialog.openWarning(
 							getViewer().getControl().getShell(),
 							"CSV Export", "Could not write csv");
-					e.printStackTrace();
+					log.debug("could not write csv", e);
 				}
 			}
 		};

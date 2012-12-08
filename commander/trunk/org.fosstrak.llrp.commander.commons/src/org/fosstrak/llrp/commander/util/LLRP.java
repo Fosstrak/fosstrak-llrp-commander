@@ -273,8 +273,8 @@ public class LLRP {
 						      xmlString = xmlString.replace(NAMESPACE_PREFIX, "");
 						      descriptionString = descriptionString + xmlString;
 							}
-							catch (TransformerException e){
-							      e.printStackTrace();
+							catch (TransformerException e) {
+								log.error("could not transform the XML element", e);
 							}
 						}
 						else if (o instanceof String){

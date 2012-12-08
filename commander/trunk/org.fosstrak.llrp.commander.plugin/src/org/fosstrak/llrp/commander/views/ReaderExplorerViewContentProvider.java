@@ -202,9 +202,9 @@ public class ReaderExplorerViewContentProvider implements
 				}
 			}
 		} catch (LLRPRuntimeException llrpe) {
-			llrpe.printStackTrace();
+			log.debug("could not initialize the adapter/reader tree", llrpe);
 		} catch (RemoteException re) {
-			re.printStackTrace();
+			log.debug("could not initialize the adapter/reader tree", re);
 		}
 		
 

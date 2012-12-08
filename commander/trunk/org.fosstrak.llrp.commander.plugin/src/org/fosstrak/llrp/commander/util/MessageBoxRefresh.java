@@ -161,8 +161,7 @@ public class MessageBoxRefresh implements Runnable {
 		} catch (InterruptedException e) {
 			log.info("received interrupt, stop refreshing messagebox.");
 		} catch (Exception e) {
-			log.error("some unknown error occured:\n" + e.getMessage());
-			e.printStackTrace();
+			log.error("some unknown error occured", e);
 			System.exit(-1);
 		}
 		

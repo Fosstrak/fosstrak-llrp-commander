@@ -25,7 +25,14 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
-import org.llrp.ltk.types.*;
+
+import org.apache.log4j.Logger;
+import org.llrp.ltk.types.LLRPEnumeration;
+import org.llrp.ltk.types.LLRPMessage;
+import org.llrp.ltk.types.LLRPNumberType;
+import org.llrp.ltk.types.LLRPParameter;
+import org.llrp.ltk.types.LLRPType;
+import org.llrp.ltk.types.TwoBitField;
 import org.llrp.ltkGenerator.generated.FieldDefinition;
 
 /**
@@ -42,6 +49,8 @@ import org.llrp.ltkGenerator.generated.FieldDefinition;
  *
  */
 public class LLRPTreeMaintainer extends Observable {
+	
+	private static Logger log = Logger.getLogger(LLRPTreeMaintainer.class);
 	
 	private final String EMPTY_STRING = "";
 	
@@ -86,7 +95,7 @@ public class LLRPTreeMaintainer extends Observable {
 				try {
 					method.invoke(messageOrParameter, methodArguments);
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("could not invoke the method", e);
 				}
 				break;
 			}
@@ -140,7 +149,7 @@ public class LLRPTreeMaintainer extends Observable {
 		try {
 			child = messageOrParameter.getClass().getMethod(methodName, new Class[0]).invoke(messageOrParameter, new Object[0]);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not get the method", e);
 		}
     	return child;
     }
@@ -152,6 +161,7 @@ public class LLRPTreeMaintainer extends Observable {
 	 * 		or a <code>List&lt;LLRPParameter&gt;</code>
 	 * @return a list of children to a given tree element.
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Object> getNonNullChildren(Object treeElement){
 		List<Object> children = new LinkedList<Object>();
 		if (treeElement instanceof LLRPMessage || treeElement instanceof LLRPParameter){
@@ -230,7 +240,7 @@ public class LLRPTreeMaintainer extends Observable {
 		try {
 			field = (LLRPType) messageOrParameter.getClass().getMethod(methodName, new Class[0]).invoke(messageOrParameter, new Object[0]);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not get the field", e);
 		}
 		return field;
 	}
@@ -251,7 +261,7 @@ public class LLRPTreeMaintainer extends Observable {
 				try {
 					method.invoke(messageOrParameter, methodArguments);
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("could not invoke the method", e);
 				}
 				break;
 			}
@@ -301,6 +311,7 @@ public class LLRPTreeMaintainer extends Observable {
 	 * 		or a <code>List&lt;LLRPParameter&gt;</code>
 	 * @return true if the given tree element is valid, false otherwise.
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean isNonRecursivelyValid(Object treeElement){
 		if (treeElement instanceof LLRPMessage || treeElement instanceof LLRPParameter){
 			return areFieldsValid(treeElement) && areMandatoryParametersPresent(treeElement) && areListsNonRecursivelyValid(treeElement);
@@ -476,6 +487,7 @@ public class LLRPTreeMaintainer extends Observable {
 	 * @param messageOrParameter either a <code>LLRPMessage</code> or a <code>LLRPParameter</code>
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	private boolean areListsNonRecursivelyValid(Object messageOrParameter){
 		boolean result = true;
 		Object messageOrParameterDefinition = getDefinition(messageOrParameter);

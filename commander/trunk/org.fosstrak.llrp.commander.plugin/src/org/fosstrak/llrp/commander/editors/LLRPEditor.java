@@ -110,7 +110,7 @@ public class LLRPEditor extends FormEditor {
 			graphicsPage = new GraphicalEditorPage(this);
 			addPage(graphicsPage);
 		} catch (PartInitException e) {
-			e.printStackTrace();
+			log.debug("could not initialize the graphics page", e);
 		}
 		
 		// Page No.1
@@ -217,7 +217,7 @@ public class LLRPEditor extends FormEditor {
 			setPageText(index, SOURCE_PAGE_TITLE);
 
 		} catch (PartInitException e) {
-			e.printStackTrace();
+			log.debug("could not initialize the text editor", e);
 		}
 	}
 

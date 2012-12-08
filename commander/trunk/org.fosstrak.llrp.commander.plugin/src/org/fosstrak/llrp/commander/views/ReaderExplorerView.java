@@ -319,10 +319,8 @@ public class ReaderExplorerView extends ViewPart {
 
 					// check whether the requested adaptor is registered in the
 					// mgmt
-					if (AdaptorManagement.getInstance().containsAdaptor(
-							adaptorName)) {
-						Adaptor adaptor = (Adaptor) AdaptorManagement
-								.getInstance().getAdaptor(adaptorName);
+					if (AdaptorManagement.getInstance().containsAdaptor(adaptorName)) {
+						Adaptor adaptor = (Adaptor) AdaptorManagement.getInstance().getAdaptor(adaptorName);
 
 						// default adaptor cannot be deleted therefore showing
 						// the
@@ -346,9 +344,7 @@ public class ReaderExplorerView extends ViewPart {
 						actionAddAdapter.setEnabled(true);
 					}
 				} catch (Exception e) {
-					log
-							.error("caught exception when adding undefine adaptor menu");
-					e.printStackTrace();
+					log.error("caught exception when adding undefine adaptor menu", e);
 				}
 
 				manager.add(actionRemoveAdaptor);
@@ -475,9 +471,9 @@ public class ReaderExplorerView extends ViewPart {
 						}
 						adapter.undefine(currentSelectedReader.getName());
 					} catch (LLRPRuntimeException llrpe) {
-						llrpe.printStackTrace();
+						log.error("could not undefine the reader", llrpe);
 					} catch (RemoteException re) {
-						re.printStackTrace();
+						log.error("remote exception while undefining the reader", re);
 					}
 
 					log.debug("Refreshing the Reader Tree...");
@@ -513,20 +509,16 @@ public class ReaderExplorerView extends ViewPart {
 
 		actionConnect = new Action() {
 			public void run() {
-				if ((null != currentSelectedReader)
-						&& (currentSelectedReader.isReader())) {
-					ReaderTreeObject adapterNode = currentSelectedReader
-							.getParent();
+				if ((null != currentSelectedReader) && (currentSelectedReader.isReader())) {
+					ReaderTreeObject adapterNode = currentSelectedReader.getParent();
 
 					try {
-						Adaptor adaptor = AdaptorManagement.getInstance()
-								.getAdaptor(adapterNode.getName());
-						adaptor.getReader(currentSelectedReader.getName())
-								.connect(true);
+						Adaptor adaptor = AdaptorManagement.getInstance().getAdaptor(adapterNode.getName());
+						adaptor.getReader(currentSelectedReader.getName()).connect(true);
 					} catch (LLRPRuntimeException llrpe) {
-						llrpe.printStackTrace();
+						log.debug("LLRP Runtime Exception while connecting reader", llrpe);
 					} catch (RemoteException re) {
-						re.printStackTrace();
+						log.debug("remote exception while trying to connect reader", re);
 					}
 				}
 
@@ -561,9 +553,9 @@ public class ReaderExplorerView extends ViewPart {
 						log.debug("Disconnecting from Adapter "
 								+ currentSelectedReader.getName());
 					} catch (LLRPRuntimeException llrpe) {
-						llrpe.printStackTrace();
+						log.debug("Exception while trying to disconnect reader", llrpe);
 					} catch (RemoteException re) {
-						re.printStackTrace();
+						log.debug("caught remote exception while disconnecting reader", re);
 					}
 				}
 				viewer.refresh(true);
@@ -624,21 +616,17 @@ public class ReaderExplorerView extends ViewPart {
 									.getInstance().getAdaptor(adaptorName);
 
 							// default adaptor cannot be deleted.
-							if (!adaptor.getAdaptorName().equalsIgnoreCase(
-									AdaptorManagement.DEFAULT_ADAPTOR_NAME)) {
+							if (!adaptor.getAdaptorName().equalsIgnoreCase(AdaptorManagement.DEFAULT_ADAPTOR_NAME)) {
 
 								// delete the adaptor
-								AdaptorManagement.getInstance().undefine(
-										adaptorName);
+								AdaptorManagement.getInstance().undefine(adaptorName);
 							}
 						}
 
 						viewer.refresh(true);
 						viewer.expandAll();
 					} catch (Exception e) {
-						log
-								.error("caught exception when undefining adaptor instance");
-						e.printStackTrace();
+						log.error("caught exception when undefining adaptor instance", e);
 					}
 
 				}
@@ -669,7 +657,7 @@ public class ReaderExplorerView extends ViewPart {
 										dlg.getValue());
 								((DELETE_ROSPEC) message).setROSpecID(rOSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the delete RO spec message", e);
 								return;
 							}
 						} else {
@@ -687,7 +675,7 @@ public class ReaderExplorerView extends ViewPart {
 										dlg.getValue());
 								((START_ROSPEC) message).setROSpecID(rOSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the start RO spec message", e);
 								return;
 							}
 						} else {
@@ -705,7 +693,7 @@ public class ReaderExplorerView extends ViewPart {
 										dlg.getValue());
 								((STOP_ROSPEC) message).setROSpecID(rOSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the stop RO spec message", e);
 								return;
 							}
 						} else {
@@ -723,7 +711,7 @@ public class ReaderExplorerView extends ViewPart {
 										dlg.getValue());
 								((ENABLE_ROSPEC) message).setROSpecID(rOSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the enable RO spec message", e);
 								return;
 							}
 						} else {
@@ -742,7 +730,7 @@ public class ReaderExplorerView extends ViewPart {
 								((DISABLE_ROSPEC) message)
 										.setROSpecID(rOSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the disable RO spec message", e);
 								return;
 							}
 						} else {
@@ -762,7 +750,7 @@ public class ReaderExplorerView extends ViewPart {
 								((DELETE_ACCESSSPEC) message)
 										.setAccessSpecID(accessSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the delete RO spec message", e);
 								return;
 							}
 						} else {
@@ -782,7 +770,7 @@ public class ReaderExplorerView extends ViewPart {
 								((ENABLE_ACCESSSPEC) message)
 										.setAccessSpecID(accessSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the enable access spec message", e);
 								return;
 							}
 						} else {
@@ -802,7 +790,7 @@ public class ReaderExplorerView extends ViewPart {
 								((DISABLE_ACCESSSPEC) message)
 										.setAccessSpecID(accessSpecID);
 							} catch (Exception e) {
-								e.printStackTrace();
+								log.error("could not create the disable access spec message", e);
 								return;
 							}
 						} else {

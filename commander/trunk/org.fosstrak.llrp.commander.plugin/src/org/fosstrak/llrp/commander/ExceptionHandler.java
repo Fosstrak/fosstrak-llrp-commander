@@ -21,6 +21,7 @@
 
 package org.fosstrak.llrp.commander;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
@@ -36,6 +37,8 @@ import org.fosstrak.llrp.client.LLRPExceptionHandlerTypeMap;
 */
 public class ExceptionHandler implements LLRPExceptionHandler {
 	
+	private static Logger log = Logger.getLogger(ExceptionHandler.class);
+	
 	// default caption for the dialog.	
 	private final static String DIALOG_CAPTION = "LLRP Client Warning";
 	
@@ -46,8 +49,6 @@ public class ExceptionHandler implements LLRPExceptionHandler {
 	}
 	
 	public void postExceptionToGUI(LLRPExceptionHandlerTypeMap exceptionType, LLRPRuntimeException e, String adaptorName, String readerName) {
-		
-
 		final LLRPExceptionHandlerTypeMap aExceptionType = exceptionType;
 		final String aAdapter = adaptorName;
 		final String aReader = readerName;
@@ -59,57 +60,66 @@ public class ExceptionHandler implements LLRPExceptionHandler {
 			public void run() {
 				switch (aExceptionType) {
 					case EXCEPTION_ADAPTOR_MANAGEMENT_NOT_INITIALIZED: {
-						processMessage("AdaptorManagement is not initialized." + '\n' + 
-								ex.getMessage());
+						log.info("adaptor management is not initialized", ex);
+						processMessage("AdaptorManagement is not initialized." + '\n'  +ex.getMessage());
 						break;
 					}
 					case EXCEPTION_ADAPTOR_MANAGEMENT_CONFIG_NOT_STORABLE: {
-						processMessage("Could not store the configuration." + '\n' + 
-								ex.getMessage());
+						log.info("adaptor management cannot store the configuration", ex);
+						processMessage("Could not store the configuration." + '\n' + ex.getMessage());
 						break;
 					}
 					case EXCEPTION_ADAPTOR_ALREADY_EXISTS: {
+						log.info("adaptor already exists", ex);
 						processMessage("Adaptor already exists: " +  aAdapter);
 						break;
 					}
 					case EXCEPTION_READER_NOT_EXIST: {
+						log.info("no such reader", ex);
 						processReaderNotExist(aAdapter, aReader);
 						break;
 					}
 					case EXCEPTION_ADAPTER_NOT_EXIST: {
+						log.info("no such adaptor", ex);
 						processAdapterNotExist(aAdapter);
 						break;
 					}
 					case EXCEPTION_READER_LOST: {
+						log.info("lost reader", ex);
 						processReaderLost(aAdapter, aReader);
 						break;
 					}
 					case EXCEPTION_ADAPTER_LOST: {
+						log.info("lost adapter", ex);
 						processAdapterLost(aAdapter);
 						break;
 					}
 					case EXCEPTION_MSG_SENDING_ERROR: {
+						log.info("could not send a message", ex);
 						processSendingError(aAdapter, aReader);
 						break;
 					}
 					case EXCEPTION_NO_READER_CONFIG_MSG: {
+						log.info("no configuration of the given reader", ex);
 						processNoReaderConfigError(aAdapter, aReader);
 						break;
 					}
 					case EXCEPTION_NO_ROSPEC_MSG: {
+						log.info("no such ro spec", ex);
 						processNoROSpecError(aAdapter, aReader);
 						break;
 					}
 					case EXCEPTION_MSG_SYNTAX_ERROR: {
+						log.info("syntax error", ex);
 						processMsgSyntaxError();
 						break;
 					}
 					default: {
+						log.info("general non treated exception", ex);
 						processGeneralException(aAdapter, aReader, ex.getMessage());
 					}
 				}
-				ResourceCenter.getInstance().
-					getReaderExplorerView().refresh();
+				ResourceCenter.getInstance().getReaderExplorerView().refresh();
 			}
 
 		});
