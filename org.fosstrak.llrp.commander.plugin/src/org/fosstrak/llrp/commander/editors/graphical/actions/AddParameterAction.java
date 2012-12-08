@@ -22,6 +22,8 @@
 package org.fosstrak.llrp.commander.editors.graphical.actions;
 
 import java.util.List;
+
+import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -37,8 +39,10 @@ import org.llrp.ltk.types.LLRPParameter;
  *
  */
 public class AddParameterAction extends Action implements IWorkbenchAction {
-	
+
 	public final static String ID = "org.fosstrak.llrp.commander.editors.graphical.actions.AddParameterAction";
+	private static Logger log = Logger.getLogger(AddParameterAction.class);
+	
 	private TreeViewer viewer;
 	private LLRPTreeMaintainer treeMaintainer;
 	private Object treeElement;
@@ -78,7 +82,7 @@ public class AddParameterAction extends Action implements IWorkbenchAction {
 			viewer.refresh();
 			viewer.setSelection(new StructuredSelection(subParameter), true);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.debug("could not add parameter", e);
 		}
 	}
 

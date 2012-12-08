@@ -81,7 +81,7 @@ public class CheckRepository extends CheckItem {
 		try {
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
 		} catch (CoreException e1) {
-			e1.printStackTrace();
+			log.error("core exception while refreshing the eclipse project", e1);
 		}
 		
 		// check if the configuration folder exists.
@@ -93,7 +93,7 @@ public class CheckRepository extends CheckItem {
 				dbFolder.create(true, true, null);
 				log.info("created db folder.");
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("could not create the db folder", e);
 			}
 		}
 	}

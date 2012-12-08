@@ -21,6 +21,7 @@
 
 package org.fosstrak.llrp.commander.dialogs;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -44,6 +45,8 @@ import org.fosstrak.llrp.adaptor.ReaderMetaData;
  *
  */
 public class ReaderSettingsDialog extends Dialog {
+	
+	private static Logger log = Logger.getLogger(ReaderSettingsDialog.class);
 	
 	private String reader;
 	private String adaptor;
@@ -89,7 +92,7 @@ public class ReaderSettingsDialog extends Dialog {
 					AdaptorManagement.getInstance().getAdaptor(adaptor).
 						getReader(reader).isReportKeepAlive());
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.debug("could not set the selection", e);
 			logKAMsg.setSelection(false);
 		} 
 		
@@ -204,7 +207,7 @@ public class ReaderSettingsDialog extends Dialog {
 				}
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			log.error("could not prepare the GUI content", ex);
 		}
 
 		Composite buttonGroup = new Composite(parent, SWT.NONE);
@@ -226,7 +229,7 @@ public class ReaderSettingsDialog extends Dialog {
 	    				AdaptorManagement.getInstance().getAdaptor(adaptor).
 	    					getReader(reader).setReportKeepAlive(logKAMsg.getSelection());
 	    			} catch (Exception e1) {
-	    				e1.printStackTrace();
+	    				log.debug("could not set the keep alive settings", e1);
 	    				logKAMsg.setSelection(false);
 	    			}
 					setReturnCode(Window.OK);

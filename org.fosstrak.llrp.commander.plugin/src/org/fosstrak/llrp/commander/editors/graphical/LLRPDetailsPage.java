@@ -303,7 +303,7 @@ public class LLRPDetailsPage implements IDetailsPage {
 						fieldClass = Class.forName("org.llrp.ltk.generated.enumerations." + fieldDefinition.getEnumeration());
 						field = (LLRPEnumeration) fieldClass.getConstructor(new Class[0]).newInstance(new Object[0]);
 					} catch (Exception e1) {
-						e1.printStackTrace();
+						log.error("could not get the field", e1);
 					}
 					field.set(combo.getText());
 					treeMaintainer.setField(input, fieldDefinition.getName(), (LLRPType) field);

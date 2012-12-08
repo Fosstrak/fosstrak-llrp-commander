@@ -194,33 +194,29 @@ public class ResourceCenter {
 		try {
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
 		} catch (CoreException e1) {
-			e1.printStackTrace();
+			log.error("could not refresh the project", e1);
 		}
 		
 		// check if the configuration folder exists.
-		IFolder configFolder = project.getFolder(
-				ResourceCenter.CONFIG_SUBFOLDER);
+		IFolder configFolder = project.getFolder(ResourceCenter.CONFIG_SUBFOLDER);
 		if (!configFolder.exists()) {
 			try {
 				log.info("create new config folder...");
 				configFolder.create(true, true, null);
 				log.info("created config folder.");
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("could not create config folder", e);
 			}
 		}
 		
 		// check if the reader configuration exists.
-		IFile cfg = configFolder.getFile(
-				ResourceCenter.RDR_CFG_FILE
-				);
+		IFile cfg = configFolder.getFile(ResourceCenter.RDR_CFG_FILE);
 		
 		if (cfg.exists()) {
 			log.info("found configuration file - good.");
 		} else {
 			log.info("reader configuration file missing. create new...");
-			String defaultCFG = Utility.findWithFullPath(
-					"/readerDefaultConfig.properties");
+			String defaultCFG = Utility.findWithFullPath("/readerDefaultConfig.properties");
 			
 			try {
 				// copy the file
@@ -229,7 +225,7 @@ public class ResourceCenter {
 				in.close();
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("could not copy config file", e);
 			}
 		}
 		// create our message handler
@@ -258,14 +254,14 @@ public class ResourceCenter {
 				try {
 					item.setContent(msg.toXMLString());
 				} catch (InvalidLLRPMessageException e) {
-					e.printStackTrace();
+					log.error("invalid LLRP message", e);
 				}
 				
 				try {
 					getRepository().put(item);
 				} catch (Exception e) {
 					// repository might be null
-					e.printStackTrace();
+					log.error("repository is null", e);
 				}
 				
 				// add the message to the meta data list.
@@ -289,8 +285,7 @@ public class ResourceCenter {
 		
 		AdaptorManagement.getInstance().registerFullHandler(handler);
 		IWorkspaceRoot myWorkspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		String readConfig = myWorkspaceRoot.getLocation().toString() + 
-				cfg.getFullPath().toString();
+		String readConfig = myWorkspaceRoot.getLocation().toString() + cfg.getFullPath().toString();
 		
 		boolean commitChanges = true;
 		try {
@@ -302,7 +297,7 @@ public class ResourceCenter {
 			
 			AdaptorManagement.getInstance().initialize(config, config, configurationClass, commitChanges, null, null);
 		} catch (LLRPRuntimeException e) {
-			e.printStackTrace();
+			log.error("could not initialize the adaptor management", e);
 		}
 		
 		adapterMgmtInitialized = true;
@@ -432,66 +427,45 @@ public class ResourceCenter {
 			try {
 				project.refreshLocal(IResource.DEPTH_INFINITE, null);
 			} catch (CoreException e1) {
-				e1.printStackTrace();
+				log.error("could not refresh the project", e1);
 			}
 			
-			IWorkspaceRoot myWorkspaceRoot = 
-				ResourcesPlugin.getWorkspace().getRoot();
-			IFolder dbFolder = project.getFolder(
-					ResourceCenter.DB_SUBFOLDER);
+			IWorkspaceRoot myWorkspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+			IFolder dbFolder = project.getFolder(ResourceCenter.DB_SUBFOLDER);
 			
-			String dbLocation = myWorkspaceRoot.getLocation().toString() + 
-					dbFolder.getFullPath().toString() + "/";
+			String dbLocation = myWorkspaceRoot.getLocation().toString() + dbFolder.getFullPath().toString() + "/";
 			
 			log.info("using db location: " + dbLocation);
 			IPreferenceStore store = LLRPPlugin.getDefault().getPreferenceStore();
-			boolean internalDB = store.getBoolean(
-					PreferenceConstants.P_USE_INTERNAL_DB);
+			boolean internalDB = store.getBoolean(PreferenceConstants.P_USE_INTERNAL_DB);
 			
 			repo = null;
-			boolean wipeRO = store.getBoolean(
-					PreferenceConstants.P_WIPE_RO_ACCESS_REPORTS_ON_STARTUP);
-			boolean wipe = store.getBoolean(
-					PreferenceConstants.P_WIPE_DB_ON_STARTUP
-					);
-			boolean logRO = store.getBoolean(
-					PreferenceConstants.P_LOG_RO_ACCESS_REPORTS
-					);
+			boolean wipeRO = store.getBoolean(PreferenceConstants.P_WIPE_RO_ACCESS_REPORTS_ON_STARTUP);
+			boolean wipe = store.getBoolean(PreferenceConstants.P_WIPE_DB_ON_STARTUP);
+			boolean logRO = store.getBoolean(PreferenceConstants.P_LOG_RO_ACCESS_REPORTS);
+			
 			Map<String, String> args = new HashMap<String, String> ();
-			args.put(RepositoryFactory.ARG_WIPE_DB, 
-					String.format("%b", wipe));
-			args.put(RepositoryFactory.ARG_WIPE_RO_ACCESS_REPORTS_DB, 
-					String.format("%b", wipeRO));
-			args.put(RepositoryFactory.ARG_LOG_RO_ACCESS_REPORT, 
-					String.format("%b", logRO));
+			args.put(RepositoryFactory.ARG_WIPE_DB,						String.format("%b", wipe));
+			args.put(RepositoryFactory.ARG_WIPE_RO_ACCESS_REPORTS_DB,	String.format("%b", wipeRO));
+			args.put(RepositoryFactory.ARG_LOG_RO_ACCESS_REPORT, 		String.format("%b", logRO));
+			
 			if (!internalDB) {
 				// obtain the user name, password and JDBC connector URL from the 
 				// eclipse preference store.
-				args.put(RepositoryFactory.ARG_USERNAME,
-						store.getString(PreferenceConstants.P_EXT_DB_USERNAME));
-				args.put(RepositoryFactory.ARG_PASSWRD,
-						store.getString(PreferenceConstants.P_EXT_DB_PWD));
-				args.put(RepositoryFactory.ARG_JDBC_STRING,
-						store.getString(PreferenceConstants.P_EXT_DB_JDBC));
-				args.put(RepositoryFactory.ARG_DB_CLASSNAME,
-						store.getString(PreferenceConstants.P_EXT_DB_IMPLEMENTOR));
+				args.put(RepositoryFactory.ARG_USERNAME,		store.getString(PreferenceConstants.P_EXT_DB_USERNAME));
+				args.put(RepositoryFactory.ARG_PASSWRD,			store.getString(PreferenceConstants.P_EXT_DB_PWD));
+				args.put(RepositoryFactory.ARG_JDBC_STRING,		store.getString(PreferenceConstants.P_EXT_DB_JDBC));
+				args.put(RepositoryFactory.ARG_DB_CLASSNAME,	store.getString(PreferenceConstants.P_EXT_DB_IMPLEMENTOR));
 				
 				try {
 					repo = RepositoryFactory.create(args);
-					
 				} catch (Exception e) {
-					log.error("Could not invoke the repository, using fallback");
-					e.printStackTrace();
-					IStatus status = new Status(
-							IStatus.WARNING, LLRPPlugin.PLUGIN_ID, 
-							"LLRP Repository Warning.", e);
-					ErrorDialog.openError(
-							LLRPPlugin.getDefault().getWorkbench()
-								.getDisplay().getActiveShell(),
-							"Could not open Repository - Using fallback.", 
-							e.getMessage(), status);
+					log.error("Could not invoke the repository, using fallback", e);
+					IStatus status = new Status(IStatus.WARNING, LLRPPlugin.PLUGIN_ID, "LLRP Repository Warning.", e);
+					ErrorDialog.openError(LLRPPlugin.getDefault().getWorkbench().getDisplay().getActiveShell(), "Could not open Repository - Using fallback.", e.getMessage(), status);
 				}
 			}
+			
 			if (internalDB || (null == repo)) {
 				log.debug("Starting internal Derby database.");
 				args.put(DerbyRepository.ARG_REPO_LOCATION, dbLocation);
@@ -502,16 +476,9 @@ public class ResourceCenter {
 				try {
 					repo.initialize(args);
 				} catch (LLRPRuntimeException e) {
-					e.printStackTrace();
-					IStatus status = new Status(
-							IStatus.WARNING, LLRPPlugin.PLUGIN_ID,
-							"LLRP Repository Warning.", e);
-					ErrorDialog.openError(
-							LLRPPlugin.getDefault().getWorkbench()
-								.getDisplay().getActiveShell(),
-							"Could not open Default/Fallback repository " + 
-							"LLRP Commander cannot continue properly!", 
-							e.getMessage(), status);
+					log.error("could not initialize the repository", e);
+					IStatus status = new Status(IStatus.WARNING, LLRPPlugin.PLUGIN_ID, "LLRP Repository Warning.", e);
+					ErrorDialog.openError(LLRPPlugin.getDefault().getWorkbench().getDisplay().getActiveShell(), "Could not open Default/Fallback repository LLRP Commander cannot continue properly!", e.getMessage(), status);
 				}
 			}
 		}
@@ -604,7 +571,7 @@ public class ResourceCenter {
 			reader.close();
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not process the given file", e);
 		}
 		
 		return aXMLContent.toString();
@@ -619,23 +586,17 @@ public class ResourceCenter {
 	 * @return LLRPMessage instance.
 	 */
 	public LLRPMessage generateLLRPMessage(String aXMLFileContent) {
-		
-		LLRPMessage message = null;
-		
-		log.info("Start generating LLRPMessage...");
-		
-		try {
-			Document doc = new org.jdom.input.SAXBuilder()
-					.build(new StringReader(aXMLFileContent));
-			
-			message = LLRPMessageFactory.createLLRPMessage(doc);
+		log.debug("Start generating LLRPMessage...");
 
+		LLRPMessage message = null;
+		try {
+			Document doc = new org.jdom.input.SAXBuilder().build(new StringReader(aXMLFileContent));
+			message = LLRPMessageFactory.createLLRPMessage(doc);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not crate the LLRP message", e);
 		}
 		
-		log.info("LLRPMessage successfully generated.");
-		
+		log.debug("LLRPMessage successfully generated.");
 		return message;
 	}
 	
@@ -664,9 +625,9 @@ public class ResourceCenter {
 			AdaptorManagement.getInstance().enqueueLLRPMessage(aAdapterName, aReaderName, aMessage);
 						
 		} catch (LLRPRuntimeException e) {
-			e.printStackTrace();
+			log.debug("could not send file", e);
 		} catch (InvalidLLRPMessageException ive) {
-			ive.printStackTrace();
+			log.debug("invalid LLRP message", ive);
 		}
 	}
 	
@@ -676,7 +637,6 @@ public class ResourceCenter {
 	public void disconnectAllReaders() {
 		log.info("Disconnecting all readers...");
 		AdaptorManagement.getInstance().disconnectReaders();
-		
 		AdaptorManagement.getInstance().shutdown();
 	}
 
@@ -854,7 +814,8 @@ public class ResourceCenter {
 		
 		String content = getMessageContent(aMsgId);
 		
-		try {IFile msgFile = writeMessageToFile(
+		try {
+			IFile msgFile = writeMessageToFile(
 					ResourceCenter.REPO_SUBFOLDER, aMsgId + ".llrp", content);
 			// Open new file in editor
 			IWorkbench workbench = PlatformUI.getWorkbench();
@@ -864,7 +825,7 @@ public class ResourceCenter {
 			IDE.openEditor(page, msgFile, 
 					"org.fosstrak.llrp.commander.editors.LLRPEditor", true);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("could not write to file", e);
 		}
 	}
 	
