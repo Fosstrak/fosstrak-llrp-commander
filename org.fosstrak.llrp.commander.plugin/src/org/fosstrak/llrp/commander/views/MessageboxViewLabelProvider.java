@@ -21,9 +21,9 @@
 
 package org.fosstrak.llrp.commander.views;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -40,17 +40,18 @@ import org.fosstrak.llrp.commander.ResourceCenter;
 * @author sawielan
 *
 */
-public class MessageboxViewLabelProvider extends LabelProvider implements
-		ITableLabelProvider {
+public class MessageboxViewLabelProvider extends LabelProvider implements ITableLabelProvider {
+	
+	public static final String ICON_INCOMING_MESSAGE = "incomingMsg.gif";
+	public static final String ICON_OUTGOING_MESSAGE = "outgoingMsg.gif";
 	
 	/**
 	 * Log4j instance.
 	 */
 	private static Logger log = Logger.getLogger(DerbyRepository.class);
 	
-	private static final DateFormat DATE_FORMATTER = new SimpleDateFormat(
-			"yyyy-MMM-dd HH:mm:ss.SSS");
-
+	private static final String DATE_FORMAT = "yyyy-MMM-dd HH:mm:ss.SSS";
+	
 	public String getColumnText(Object aObj, int aIndex) {
 		LLRPMessageItem msg = (LLRPMessageItem) aObj;
 		
@@ -68,26 +69,21 @@ public class MessageboxViewLabelProvider extends LabelProvider implements
 			case MessageboxView.COL_MSG_COMMENT:
 				return msg.getComment();
 			case MessageboxView.COL_MSG_TIME:
-				return DATE_FORMATTER.format(msg.getTime());
+				return new SimpleDateFormat(DATE_FORMAT).format(msg.getTime());
 		}
 		
-		return "";
+		return StringUtils.EMPTY;
 	}
 
 	public Image getColumnImage(Object aObj, int aIndex) {
-		
 		LLRPMessageItem msg = (LLRPMessageItem) aObj;
-		
 		if (aIndex == MessageboxView.COL_MSG_MARK) {
 			log.trace("Mark value is " + msg.getMark());
 			if (msg.getMark() == LLRPMessageItem.MARK_INCOMING) {
-				return ResourceCenter.getInstance().getImage("incomingMsg.gif");
-			} else {
-				return ResourceCenter.getInstance().getImage("outgoingMsg.gif");
+				return ResourceCenter.getInstance().getImage(ICON_INCOMING_MESSAGE);
 			}
-			
+			return ResourceCenter.getInstance().getImage(ICON_OUTGOING_MESSAGE);
 		}
-		
 		return null;
 	}
 }

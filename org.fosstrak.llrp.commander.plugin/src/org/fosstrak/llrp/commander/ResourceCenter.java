@@ -25,13 +25,19 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
@@ -64,11 +70,13 @@ import org.fosstrak.llrp.client.RepositoryFactory;
 import org.fosstrak.llrp.client.repository.sql.DerbyRepository;
 import org.fosstrak.llrp.commander.preferences.PreferenceConstants;
 import org.fosstrak.llrp.commander.repository.MessageModel;
+import org.fosstrak.llrp.commander.util.JarFolderExtractor;
 import org.fosstrak.llrp.commander.util.LLRP;
 import org.fosstrak.llrp.commander.util.MessageBoxRefresh;
 import org.fosstrak.llrp.commander.util.Utility;
 import org.fosstrak.llrp.commander.views.MessageboxView;
 import org.fosstrak.llrp.commander.views.ReaderExplorerView;
+import org.fosstrak.tdt.TDTEngine;
 import org.jdom.Document;
 import org.llrp.ltk.exceptions.InvalidLLRPMessageException;
 import org.llrp.ltk.generated.LLRPMessageFactory;
@@ -124,7 +132,7 @@ public class ResourceCenter {
 	
 	public final static String DB_SUBFOLDER = "db"; 
 	
-	private static ResourceCenter instance;
+	private static final ResourceCenter instance = new ResourceCenter();
 	
 	private Repository repo;
 	
@@ -159,7 +167,9 @@ public class ResourceCenter {
 	private boolean roAccessReportsLogginInitialized = false;
 	
 	/** use an image cache in order not to recreate images over and over again.*/
-	private Map<String, Image> imageCache = new HashMap<String, Image> ();
+	private Map<String, Image> imageCache = new ConcurrentHashMap<String, Image> ();
+	
+	private TDTEngine tdtEngine = null;
 	
     /**
      * Private Constructor, internally called.
@@ -224,8 +234,10 @@ public class ResourceCenter {
 				cfg.create(in, false, null);
 				in.close();
 				
-			} catch (Exception e) {
+			} catch (IOException e) {
 				log.error("could not copy config file", e);
+			} catch (CoreException e) {
+				log.error("could not copy config file - got a core exception", e);
 			}
 		}
 		// create our message handler
@@ -313,10 +325,9 @@ public class ResourceCenter {
 		
 		// get a handle of the repository.
 		ROAccessReportsRepository r = getRepository().getROAccessRepository();
-		if ((null != r) && (r instanceof MessageHandler)) {
+		if (null != r) {
 			log.debug("initializing RO_ACCESS_REPORTS logging facility.");			
-			AdaptorManagement.getInstance().registerPartialHandler(
-					(MessageHandler)r, RO_ACCESS_REPORT.class);
+			AdaptorManagement.getInstance().registerPartialHandler(r, RO_ACCESS_REPORT.class);
 		}
 		roAccessReportsLogginInitialized = true;
 	}
@@ -331,13 +342,10 @@ public class ResourceCenter {
 	}
 	
     /**
-     * Return the only instance of this class, call the Constructor in its first call.
+     * Return the only instance of this class.
      *
      */
 	public static ResourceCenter getInstance() {
-		if (null == instance) {
-			instance = new ResourceCenter();
-		}
 		return instance;
 	}
 	
@@ -468,10 +476,10 @@ public class ResourceCenter {
 			
 			if (internalDB || (null == repo)) {
 				log.debug("Starting internal Derby database.");
-				args.put(DerbyRepository.ARG_REPO_LOCATION, dbLocation);
-				args.put(RepositoryFactory.ARG_USERNAME, "");
-				args.put(RepositoryFactory.ARG_PASSWRD, "");
-				args.put(RepositoryFactory.ARG_JDBC_STRING, "");
+				args.put(DerbyRepository.ARG_REPO_LOCATION, 	dbLocation);
+				args.put(RepositoryFactory.ARG_USERNAME, 		"");
+				args.put(RepositoryFactory.ARG_PASSWRD, 		"");
+				args.put(RepositoryFactory.ARG_JDBC_STRING, 	"");
 				repo = new DerbyRepository();
 				try {
 					repo.initialize(args);
@@ -538,7 +546,6 @@ public class ResourceCenter {
 	 * @return Current editing file name
 	 */
 	public String getCurrentFileName() {
-		
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 		String fileName = page.getActiveEditor().getEditorInput().getName();
@@ -551,7 +558,6 @@ public class ResourceCenter {
 	 * @return Current editing XML content
 	 */
 	public String getCurrentFile() {
-		
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 		IFileEditorInput input = (IFileEditorInput) page.getActiveEditor().getEditorInput();
@@ -662,15 +668,14 @@ public class ResourceCenter {
 	 * @return Image instance
 	 */
 	public Image getImage(String aFilename) {
-		synchronized (imageCache) {
-			if (imageCache.containsKey(aFilename)) {
-				return imageCache.get(aFilename);
-			}
-			log.debug("Generate Image:" + "icons/" + aFilename);
-			Image img = LLRPPlugin.getImageDescriptor("icons/" + aFilename).createImage();
-			imageCache.put(aFilename, img);
-			return img;
+		if (imageCache.containsKey(aFilename)) {
+			return imageCache.get(aFilename);
 		}
+			
+		log.debug("Generate Image:" + "icons/" + aFilename);
+		Image img = LLRPPlugin.getImageDescriptor("icons/" + aFilename).createImage();
+		imageCache.put(aFilename, img);
+		return img;
 	}
 	
 	/**
@@ -690,11 +695,11 @@ public class ResourceCenter {
 	
 	public void postExceptionToGUI(LLRPExceptionHandlerTypeMap aExceptionType, String aAdapter, String aReader) {
 		if (null == exceptionHandler) {
+			log.debug("not exception handler defined - skipping");
 			return;
 		}
 		
 		exceptionHandler.postExceptionToGUI(aExceptionType, null, aAdapter, aReader);
-		
 	}
 	
 	/**
@@ -778,8 +783,7 @@ public class ResourceCenter {
 		if (null == folder) folder = ResourceCenter.REPO_SUBFOLDER;
 		if (null == msg) return null;
 		
-		if (null == fileName) fileName = String.format(
-				"%d.csv", System.currentTimeMillis());
+		if (null == fileName) fileName = String.format("%d.csv", System.currentTimeMillis());
 		
 		IProject project = getEclipseProject();
 		
@@ -846,5 +850,38 @@ public class ResourceCenter {
 	 */
 	public MessageBoxRefresh getMessageBoxRefresh() {
 		return messageBoxRefresh;
+	}
+
+	/**
+	 * @return a handle onto the TDT engine.
+	 */
+	public TDTEngine getTdtEngine() {
+		if (null == tdtEngine) {
+			try {
+				log.info("extracting tdt schemes.");
+				String target = System.getProperty("java.io.tmpdir") + "/tdtschemes/";
+				log.debug(target);
+				
+				String path = TDTEngine.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+				log.debug(path);
+				String decodedPath = URLDecoder.decode(path, "UTF-8");
+				log.debug(decodedPath);
+				new JarFolderExtractor().extractDirectoryFromJar(decodedPath, "auxiliary", target);
+				new JarFolderExtractor().extractDirectoryFromJar(decodedPath, "schemes", target);
+				new JarFolderExtractor().extractDirectoryFromJar(decodedPath, "xsd", target);
+				log.info("tdt schemes extracted.");
+
+				tdtEngine = new TDTEngine(
+						new URL("file:/" + target + "auxiliary/ManagerTranslation.xml"), 
+						new URL("file:/" + target + "schemes/"));
+				
+				log.info("tdt engine created");
+			} catch (IOException e) {
+				log.error("could not create TDT", e);
+			} catch (JAXBException e) {
+				log.error("could not create TDT", e);
+			}
+		}
+		return tdtEngine;
 	}
 }

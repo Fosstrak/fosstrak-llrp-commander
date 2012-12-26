@@ -21,6 +21,8 @@
 
 package org.fosstrak.llrp.commander.util;
 
+import org.apache.commons.lang.ArrayUtils;
+
 /**
  * This class represents an LLRP constraint stating that a certain array field must not be empty.
  * 
@@ -53,7 +55,7 @@ public class LLRPArrayConstraint {
 	public LLRPArrayConstraint(String messageOrParameterName, String fieldName, int[] defaultValue) {
 		this.messageOrParameterName = messageOrParameterName;
 		this.fieldName = fieldName;
-		this.defaultValue = defaultValue;
+		this.defaultValue = ArrayUtils.clone(defaultValue);
 	}
 
 	/**

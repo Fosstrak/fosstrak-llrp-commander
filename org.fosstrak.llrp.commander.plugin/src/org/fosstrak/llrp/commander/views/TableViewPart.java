@@ -21,6 +21,7 @@
 
 package org.fosstrak.llrp.commander.views;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
@@ -185,11 +186,11 @@ public class TableViewPart extends ViewPart {
 	}
 
 	public void setColumnHeaders(String[] strings) {
-		columnHeaders = strings;
+		columnHeaders = (String[]) ArrayUtils.clone(strings);
 	}
 
 	public void setColumnLayouts(ColumnLayoutData[] data) {
-		columnLayouts = data;
+		columnLayouts = (ColumnLayoutData[]) ArrayUtils.clone(data);
 	}
 
 	public void setDoubleClickAction(IAction action) {
