@@ -23,8 +23,6 @@ package org.fosstrak.llrp.commander;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -73,7 +71,6 @@ import org.fosstrak.llrp.commander.repository.MessageModel;
 import org.fosstrak.llrp.commander.util.JarFolderExtractor;
 import org.fosstrak.llrp.commander.util.LLRP;
 import org.fosstrak.llrp.commander.util.MessageBoxRefresh;
-import org.fosstrak.llrp.commander.util.Utility;
 import org.fosstrak.llrp.commander.views.MessageboxView;
 import org.fosstrak.llrp.commander.views.ReaderExplorerView;
 import org.fosstrak.tdt.TDTEngine;
@@ -226,11 +223,10 @@ public class ResourceCenter {
 			log.info("found configuration file - good.");
 		} else {
 			log.info("reader configuration file missing. create new...");
-			String defaultCFG = Utility.findWithFullPath("/readerDefaultConfig.properties");
 			
 			try {
 				// copy the file
-				InputStream in = new FileInputStream(new File(defaultCFG));					
+				InputStream in = ResourceCenter.class.getResourceAsStream("/readerDefaultConfig.properties");
 				cfg.create(in, false, null);
 				in.close();
 				
