@@ -107,9 +107,7 @@ public class GroupedStringFieldEditor extends FieldEditor  {
 	 * <code>}</code>
 	 * @param parent the parent widget of this editor.
 	 */
-	public GroupedStringFieldEditor(String labelText, 
-			String[][] preferencesLabelsAndNames, Composite parent) {
-		
+	public GroupedStringFieldEditor(String labelText, String[][] preferencesLabelsAndNames, Composite parent) {
 		this.preferencesLabelsAndNames = preferencesLabelsAndNames;
 		setLabelText(labelText);
 		this.numColumns = 2;

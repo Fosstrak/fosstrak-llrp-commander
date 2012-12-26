@@ -21,9 +21,14 @@ import org.epcglobalinc.tdt.LevelTypeList;
 import org.fosstrak.llrp.client.repository.sql.roaccess.AbstractSQLROAccessReportsRepository;
 import org.fosstrak.llrp.client.repository.sql.roaccess.DerbyROAccessReportsRepository;
 import org.fosstrak.llrp.client.repository.sql.roaccess.ROAccessItem;
+import org.fosstrak.llrp.commander.ResourceCenter;
 import org.fosstrak.tdt.TDTEngine;
 
 public class DetailsDialog extends Dialog {
+	
+	private static final String EXTRA_PARAMS_COMPANYPREFIXLENGTH = "gs1companyprefixlength";
+	private static final String EXTRA_PARAMS_FILTER = "filter";
+	private static final String EXTRA_PARAMS_TAGLENGTH = "taglength";
 	
 	final protected ROAccessItem item;
 	
@@ -66,15 +71,21 @@ public class DetailsDialog extends Dialog {
 					(AbstractSQLROAccessReportsRepository.CINDEX_EPC == i+1)) {
 				// try to add the tdt stuff...
 				try {
-					TDTEngine tdt = new TDTEngine();
+					TDTEngine tdt = ResourceCenter.getInstance().getTdtEngine();
 					
 					String binary = tdt.hex2bin(s);
 					if (binary.startsWith("1")) binary = "00" + binary;
 					
+					// FIXME: parameterize in later release via configuration.
+					HashMap<String, String> tdtParameters = new HashMap<String, String> ();
+					tdtParameters.put(EXTRA_PARAMS_COMPANYPREFIXLENGTH, "7");
+					tdtParameters.put(EXTRA_PARAMS_FILTER, "3");
+					tdtParameters.put(EXTRA_PARAMS_TAGLENGTH, "96");
+					
 					// try to translate to tag and epc
 					String asEPC = tdt.convert(
 							binary, 
-							new HashMap<String, String> (), 
+							tdtParameters, 
 							LevelTypeList.PURE_IDENTITY);
 					
 					final Label lblEPC = new Label(parent, SWT.NONE);
@@ -89,7 +100,7 @@ public class DetailsDialog extends Dialog {
 					
 					String asTag = tdt.convert(
 							binary, 
-							new HashMap<String, String> (), 
+							tdtParameters, 
 							LevelTypeList.TAG_ENCODING);
 					
 					final Label lblTag = new Label(parent, SWT.NONE);

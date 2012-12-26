@@ -95,12 +95,12 @@ public class JarFolderExtractor {
 		Enumeration<JarEntry> entries = jarFile.entries();
 		while (entries.hasMoreElements()) {
 			final JarEntry entry = entries.nextElement();
-			log.debug(entry);
+			log.trace(entry);
 			
 			if (entry.getName().startsWith(directoryName)) {
 				copyToFile(jarFile, entry, targetFolder);
 			} else {
-				log.debug("no match");
+				log.trace("no match");
 			}
 		}
 		jarFile.close();

@@ -215,11 +215,10 @@ public class LLRPMasterDetailsBlock extends MasterDetailsBlock {
 					else if (o instanceof ChoiceReference){
 						childName = ((ChoiceReference) o).getType(); 
 					}
-					if (LLRP.canOccurMultipleTimes(messageOrParameterDefinition, childName)){
-						// lists can't be added or removed, therefore don't create actions for lists
-					}
-					else {
-						if (LLRP.isChoice(messageOrParameterDefinition, childName)){
+					// lists can't be added or removed, therefore don't create actions for lists
+					// thus treat here only non lists...
+					if (!LLRP.canOccurMultipleTimes(messageOrParameterDefinition, childName)) {
+						if (LLRP.isChoice(messageOrParameterDefinition, childName)) {
 							MenuManager choiceMenuManager = new MenuManager(childName);
 							addMenuManager.add(choiceMenuManager);
 							ChoiceDefinition choiceDefinition = LLRP.getChoiceDefinition(childName);

@@ -21,6 +21,8 @@
 
 package org.fosstrak.llrp.commander.util;
 
+import org.apache.commons.lang.ArrayUtils;
+
 /**
  * This class represents an LLRP range constraint. It specifies that a certain numeric field value
  * must lie within some ranges.
@@ -72,7 +74,7 @@ public class LLRPRangeConstraint {
 			String preconditionedEnumerationValue){
 		this.messageOrParameterName = messageOrParameterName;
 		this.fieldName = fieldName;
-		this.ranges = ranges;
+		this.ranges = (Range[]) ArrayUtils.clone(ranges);
 		this.preconditionedEnumerationName = preconditionedEnumerationName;
 		this.preconditionedEnumerationValue = preconditionedEnumerationValue;
 	}
