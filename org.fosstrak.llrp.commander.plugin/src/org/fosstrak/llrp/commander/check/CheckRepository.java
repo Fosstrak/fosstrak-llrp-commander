@@ -26,8 +26,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.fosstrak.llrp.client.Repository;
-import org.fosstrak.llrp.client.repository.sql.DerbyRepository;
 import org.fosstrak.llrp.commander.ResourceCenter;
 
 /**
@@ -62,13 +60,10 @@ public class CheckRepository extends CheckItem {
 		} catch (Exception e) {
 			return false;
 		}
-		Repository r = ResourceCenter.getInstance().getRepository();
-		if (r instanceof DerbyRepository) {
-			DerbyRepository repo = (DerbyRepository) r; 
-			if (!repo.isHealth()) {
-				addReportItem("JavaDB Repository doesn't exist or is corrupted.", CATEGORY_ERROR);
-				return false;
-			}
+
+		if (!ResourceCenter.getInstance().getPersistence().isClean()) {
+			addReportItem("JavaDB Repository doesn't exist or is corrupted.", CATEGORY_ERROR);
+			return false;
 		}
 		return true;
 	}

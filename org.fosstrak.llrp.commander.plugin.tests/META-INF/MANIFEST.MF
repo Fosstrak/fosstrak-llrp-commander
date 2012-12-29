@@ -7,3 +7,4 @@ Require-Bundle: org.junit4;bundle-version="4.0.0",
  org.eclipse.core.runtime,
  org.fosstrak.llrp.commander.plugin;bundle-version="1.1.1"
 Bundle-Vendor: ETH Zurich
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

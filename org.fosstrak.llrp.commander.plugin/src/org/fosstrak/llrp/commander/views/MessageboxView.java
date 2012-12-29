@@ -22,6 +22,7 @@
 package org.fosstrak.llrp.commander.views;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
@@ -48,9 +49,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.fosstrak.llrp.client.Constants;
 import org.fosstrak.llrp.client.LLRPMessageItem;
-import org.fosstrak.llrp.client.Repository;
 import org.fosstrak.llrp.commander.ResourceCenter;
 import org.fosstrak.llrp.commander.dialogs.MessageboxViewOptionsDialog;
+import org.fosstrak.llrp.commander.persistence.Persistence;
 import org.fosstrak.llrp.commander.util.MessageBoxRefresh;
 
 /**
@@ -331,20 +332,15 @@ public class MessageboxView extends TableViewPart implements ISelectionListener 
 		super.createActions();
 		deleteAction = new Action() {
 			public void run() {
-				String adapter = ResourceCenter.getInstance().
-					getReaderExplorerView().getSelectedAdapter();
-				String reader = ResourceCenter.getInstance().
-					getReaderExplorerView().getSelectedReader();
+				String adapter = ResourceCenter.getInstance().getReaderExplorerView().getSelectedAdapter();
+				String reader = ResourceCenter.getInstance().getReaderExplorerView().getSelectedReader();
 				
-				if (Constants.ROOT_NAME.
-						equals(adapter) || (null == adapter)) {
-					
-					ResourceCenter.getInstance().getRepository().clearAll();
+				if (Constants.ROOT_NAME.equals(adapter) || (null == adapter)) {					
+					ResourceCenter.getInstance().getPersistence().clearAll();
 				} else if (null == reader) {
-					ResourceCenter.getInstance().getRepository().clearAdapter(adapter);
+					ResourceCenter.getInstance().getPersistence().clearAdapter(adapter);
 				} else {
-					ResourceCenter.getInstance().getRepository().clearReader(
-							adapter, reader);
+					ResourceCenter.getInstance().getPersistence().clearReader(adapter, reader);
 				}
 				ResourceCenter.getInstance().clearMessageMetadataList();
 				
@@ -432,7 +428,7 @@ public class MessageboxView extends TableViewPart implements ISelectionListener 
 						final int nMsg = dlg.getNumberOfMessages();
 						displayNumMessages = nMsg;
 						if (nMsg <= 0) {
-							displayNumMessages = Repository.RETRIEVE_ALL;
+							displayNumMessages = Persistence.RETRIEVE_ALL;
 						}
 					} catch (Exception e) {
 						log.error("could not change the refresh time.");
@@ -497,8 +493,7 @@ public class MessageboxView extends TableViewPart implements ISelectionListener 
 			if (reload) {
 	
 				// first load all the messages from the database backend.
-				Repository repo = ResourceCenter.getInstance().getRepository();
-				ArrayList<LLRPMessageItem> msgs = repo.get(
+				List<LLRPMessageItem> msgs = ResourceCenter.getInstance().getPersistence().get(
 						selectedAdapter, 
 						selectedReader, 
 						displayNumMessages,
@@ -511,7 +506,7 @@ public class MessageboxView extends TableViewPart implements ISelectionListener 
 				
 			} else {
 				
-				ArrayList<LLRPMessageItem> list = 
+				List<LLRPMessageItem> list = 
 					ResourceCenter.getInstance().getMessageMetadataList();
 				
 				if (list.size() > 0) {

@@ -11,3 +11,4 @@ Require-Bundle: org.junit4;bundle-version="4.0.0",
  org.apache.velocity;bundle-version="1.5.0",
  org.apache.xerces;bundle-version="2.9.0"
 Bundle-Vendor: ETH Zurich
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
