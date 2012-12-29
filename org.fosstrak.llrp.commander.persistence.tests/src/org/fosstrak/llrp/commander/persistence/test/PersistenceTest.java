@@ -134,7 +134,7 @@ public class PersistenceTest {
 	}
 	
 	@Test
-	public void testRetrieveAll() {
+	public void testGetRetrieveAll() {
 		Repository repository = EasyMock.createMock(Repository.class);
 		EasyMock.expect(repository.get(ADAPTER_NAME, READER_NAME, Repository.RETRIEVE_ALL, true)).andReturn(new ArrayList<LLRPMessageItem> ());
 		EasyMock.replay(repository);
@@ -144,6 +144,84 @@ public class PersistenceTest {
 		
 		List<LLRPMessageItem> items = p.get(ADAPTER_NAME, READER_NAME, Persistence.RETRIEVE_ALL, true);
 		Assert.assertNotNull(items);
+		EasyMock.verify(repository);
+	}
+	
+	@Test
+	public void testIsCleanNoRepo() {
+		Persistence p = new PersistenceImpl();
+		Assert.assertFalse(p.isClean());
+	}
+	
+	@Test
+	public void testIsClean() {
+		Repository repository = EasyMock.createMock(Repository.class);
+		
+		EasyMock.expect(repository.isHealth()).andReturn(false);
+		
+		EasyMock.replay(repository);
+		
+		Persistence p = new PersistenceImpl();
+		((PersistenceImpl)p).setRepository(repository);
+		Assert.assertFalse(p.isClean());
+		
+		EasyMock.verify(repository);
+	}
+	
+	@Test
+	public void testCount() {
+		Repository repository = EasyMock.createMock(Repository.class);
+		
+		EasyMock.expect(repository.count(ADAPTER_NAME, READER_NAME)).andReturn(10);
+		
+		EasyMock.replay(repository);
+		
+		Persistence p = new PersistenceImpl();
+		((PersistenceImpl)p).setRepository(repository);
+		Assert.assertEquals(10, p.count(ADAPTER_NAME, READER_NAME));
+		
+		EasyMock.verify(repository);
+	}
+	
+	@Test
+	public void testClearAll() {
+		Repository repository = EasyMock.createMock(Repository.class);
+		repository.clearAll();
+		EasyMock.expectLastCall();
+		EasyMock.replay(repository);
+		
+		Persistence p = new PersistenceImpl();
+		((PersistenceImpl)p).setRepository(repository);
+		
+		p.clearAll();
+		EasyMock.verify(repository);
+	}
+	
+	@Test
+	public void testClearAdapter() {
+		Repository repository = EasyMock.createMock(Repository.class);
+		repository.clearAdapter(ADAPTER_NAME);
+		EasyMock.expectLastCall();
+		EasyMock.replay(repository);
+		
+		Persistence p = new PersistenceImpl();
+		((PersistenceImpl)p).setRepository(repository);
+		
+		p.clearAdapter(ADAPTER_NAME);
+		EasyMock.verify(repository);
+	}
+	
+	@Test
+	public void testClearReader() {
+		Repository repository = EasyMock.createMock(Repository.class);
+		repository.clearReader(ADAPTER_NAME, READER_NAME);
+		EasyMock.expectLastCall();
+		EasyMock.replay(repository);
+		
+		Persistence p = new PersistenceImpl();
+		((PersistenceImpl)p).setRepository(repository);
+		
+		p.clearReader(ADAPTER_NAME, READER_NAME);
 		EasyMock.verify(repository);
 	}
 	

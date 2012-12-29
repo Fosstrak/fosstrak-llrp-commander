@@ -144,6 +144,7 @@ public class PersistenceImpl implements Persistence {
   	  	
 		args.put(RepositoryFactory.ARG_WIPE_DB, 					String.format("%b", desc.isWipeDbAtStartup()));
   	  	args.put(RepositoryFactory.ARG_WIPE_RO_ACCESS_REPORTS_DB,	String.format("%b", desc.isWipeRoAccessDbAtStartup()));
+  	  	args.put(RepositoryFactory.ARG_LOG_RO_ACCESS_REPORT,		String.format("%b", desc.isLogRoAccess()));
   	  	args.put(RepositoryFactory.ARG_USERNAME,					desc.getUsername());
   	  	args.put(RepositoryFactory.ARG_PASSWRD,						desc.getPassword());
   	  	args.put(RepositoryFactory.ARG_JDBC_STRING,					desc.getJdbc());
@@ -210,10 +211,7 @@ public class PersistenceImpl implements Persistence {
 		if (null == repository) {
 			return false;
 		}
-		if (repository instanceof DerbyRepository) {
-			return ((DerbyRepository) repository).isHealth(); 
-		}
-		return true;
+		return repository.isHealth();
 	}
 
 	@Override
