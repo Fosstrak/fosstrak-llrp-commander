@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: org.fosstrak.llrp.commander.persistence
 Bundle-SymbolicName: org.fosstrak.llrp.commander.persistence;singleton:=true
 Bundle-Version: 1.1.1.qualifier
-Require-Bundle: org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1",
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
+ org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1",
  org.fosstrak.llrp.commander.commons;bundle-version="1.1.1"
 Import-Package: org.apache.log4j
 Bundle-Vendor: ETH Zurich
