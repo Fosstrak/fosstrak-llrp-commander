@@ -23,9 +23,10 @@
 
 		<sonar.language>java</sonar.language>
 		<!-- Tells Sonar to run the unit tests -->
-		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
+		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
 		<!-- Tells Sonar to use JaCoCo as the code coverage tool -->
 		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+		<sonar.jacoco.reportPath>../target/jacoco.exec</sonar.jacoco.reportPath>
 	</properties>
 
 	<modules>
@@ -106,6 +107,37 @@
 				<configuration>
 					<aggregate>true</aggregate>
 				</configuration>
+			</plugin>
+			<!-- Testing -->
+			<plugin>
+			   <groupId>org.eclipse.tycho</groupId>
+			   <artifactId>tycho-surefire-plugin</artifactId>
+			   <version>${tycho-version}</version>
+			   <configuration>
+				  <useUIHarness>false</useUIHarness>
+				  <includes>
+					 <include>**/*Test.java</include>
+				  </includes>
+				  <!-- Kill test JVM if tests take more than 10 minutes (600 seconds) to finish -->
+				  <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+			   </configuration>
+			</plugin>
+			<!-- Enabling use of jacoco -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.5.3.201107060350</version>
+				<executions>
+				  <execution>
+					<goals>
+					  <goal>prepare-agent</goal>
+					</goals>
+					<configuration>
+					  <!-- Where to put jacoco coverage report -->
+					  <destFile>${sonar.jacoco.reportPath}</destFile>
+					</configuration>
+				  </execution>
+				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>
