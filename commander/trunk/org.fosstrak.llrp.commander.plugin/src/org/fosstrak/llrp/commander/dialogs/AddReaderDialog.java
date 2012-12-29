@@ -43,7 +43,7 @@ import org.fosstrak.llrp.adaptor.AdaptorManagement;
  */
 public class AddReaderDialog extends ConnectDialog {
 	
-	private static Logger log = Logger.getLogger(AddReaderDialog.class);
+	private static final Logger log = Logger.getLogger(AddReaderDialog.class);
 	
 	/** the index for the reader name in the values array. */
 	private static final int VALUE_READER_NAME = 0;
@@ -75,7 +75,7 @@ public class AddReaderDialog extends ConnectDialog {
 	 */
 	public AddReaderDialog(Shell aShell) {
 		super(aShell, "Add Local Reader");
-		FIELDS = new String[] { "Reader Name", "IP", "Port" };
+		setFieldsLabels(new String[] { "Reader Name", "IP", "Port" });
 		
 		// make sure, we propose a unique reader name
 		String readerName = String.format("ReaderName%d", num++);
@@ -90,19 +90,19 @@ public class AddReaderDialog extends ConnectDialog {
 			readerName = String.format("ReaderName%d", 
 					System.currentTimeMillis());
 		}
-		DEFAULTS = new String [] { 	readerName, "127.0.0.1", "5084" };
+		setFieldsDefaultValues(new String [] { 	readerName, "127.0.0.1", "5084" });
 	}
 	
 	@Override
 	protected void addOKButton(Composite parent) {
 		final Button btnOK = new Button(parent, SWT.PUSH);
 		btnOK.setText("OK");
-		btnOK.setLayoutData(gridLabel);
+		btnOK.setLayoutData(getGridLabel());
 		
 		btnOK.addSelectionListener(new SelectionAdapter() {
 		      public void widgetSelected(SelectionEvent e) {
-		    	  for (int i=0; i<DEFAULTS.length; i++) {
-		    		  values[i] = txts[i].getText();
+		    	  for (int i=0; i<getFieldsDefaultValues().length; i++) {
+		    		  getValues()[i] = getTxts()[i].getText();
 		    	  }
 				
 		    	  ci = cICon.getSelection();
@@ -152,21 +152,21 @@ public class AddReaderDialog extends ConnectDialog {
 	 * @return Logical Name of connection resource
 	 */
 	public String getName() {
-		return values[VALUE_READER_NAME];
+		return getValues()[VALUE_READER_NAME];
 	}
 
 	/**
 	 * @return IP Address of connection resource
 	 */
 	public String getIP() {
-		return values[VALUE_READER_IP];
+		return getValues()[VALUE_READER_IP];
 	}
 
 	/**
 	 * @return IP Port of connection resource
 	 */
 	public int getPort() {
-		return Integer.parseInt(values[VALUE_READER_PORT]);
+		return Integer.parseInt(getValues()[VALUE_READER_PORT]);
 	}
 	
 	/**

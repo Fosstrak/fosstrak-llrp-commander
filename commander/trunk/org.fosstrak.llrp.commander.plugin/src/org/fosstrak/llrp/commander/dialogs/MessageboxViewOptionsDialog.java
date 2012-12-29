@@ -37,8 +37,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.fosstrak.llrp.client.Repository;
 import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.persistence.Persistence;
 import org.fosstrak.llrp.commander.views.MessageboxView;
 
 /**
@@ -103,7 +103,7 @@ public class MessageboxViewOptionsDialog extends Dialog {
 		
 		Label lblNMsg = new Label(parent, SWT.NONE);
 		lblNMsg.setText(String.format("Number of Messages (of %d):",
-				ResourceCenter.getInstance().getRepository().count(
+				ResourceCenter.getInstance().getPersistence().count(
 						mbv.getSelectedAdapter(), 
 						mbv.getSelectedReader())));
 		lblNMsg.setLayoutData(gridLabel);
@@ -122,7 +122,7 @@ public class MessageboxViewOptionsDialog extends Dialog {
 		allMsg.setText("display all messages");
 		allMsg.setLayoutData(gridNoWidthHint);
 		allMsg.setSelection(false);
-		if (Repository.RETRIEVE_ALL == getNumberOfMessages()) {
+		if (Persistence.RETRIEVE_ALL == getNumberOfMessages()) {
 			allMsg.setSelection(true);
 		}
 		// add a selection listener that changes the value of the 
@@ -135,7 +135,7 @@ public class MessageboxViewOptionsDialog extends Dialog {
 			public void widgetSelected(SelectionEvent arg0) {
 				if (allMsg.getSelection()) {
 					txtNMsg.setText(String.format("%d", 
-							Repository.RETRIEVE_ALL));
+							Persistence.RETRIEVE_ALL));
 				} else {
 					txtNMsg.setText(String.format("%d", 
 							ResourceCenter.GET_MAX_MESSAGES));
@@ -181,7 +181,7 @@ public class MessageboxViewOptionsDialog extends Dialog {
 					final int n = (new Integer(txtNMsg.getText())).intValue();
 					btnOK.setEnabled(true);
 					setNumberOfMessages(n);
-					if (Repository.RETRIEVE_ALL != n) {
+					if (Persistence.RETRIEVE_ALL != n) {
 						allMsg.setSelection(false);
 					} else {
 						allMsg.setSelection(true);

@@ -47,8 +47,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.fosstrak.llrp.adaptor.AdaptorManagement;
 import org.fosstrak.llrp.client.MessageHandler;
-import org.fosstrak.llrp.client.ROAccessReportsRepository;
-import org.fosstrak.llrp.client.Repository;
 import org.fosstrak.llrp.client.repository.sql.roaccess.DerbyROAccessReportsRepository;
 import org.fosstrak.llrp.client.repository.sql.roaccess.ROAccessItem;
 import org.fosstrak.llrp.commander.ResourceCenter;
@@ -156,30 +154,14 @@ public class ROAccessReportsView extends TableViewPart implements MessageHandler
 		actionLoadFromDatabase = new Action() {
 			@Override
 			public void run() {
-				Repository repo = ResourceCenter.getInstance().getRepository();
-				if (null == repo) return;
-				ROAccessReportsRepository rorepo = repo.getROAccessRepository();
-				if (null == rorepo) return;
-				
-				try {
-					List<ROAccessItem> items = rorepo.getAll();
-					for (ROAccessItem item : items) {
-						getViewer().add(item);
-					}
-				} catch (Exception e) {
-					log.error(
-							String.format("could not load messages from db: %s",
-									e.getMessage()));
+				List<ROAccessItem> items = ResourceCenter.getInstance().getPersistence().getAllRoAccessReports();
+				for (ROAccessItem item : items) {
+					getViewer().add(item);
 				}
-				
 			}
 		};
-		Repository repo = ResourceCenter.getInstance().getRepository();
-		if ((null != repo) && (null != repo.getROAccessRepository())) {
-			actionLoadFromDatabase.setEnabled(true);
-		} else {
-			actionLoadFromDatabase.setEnabled(false);
-		}
+		
+		actionLoadFromDatabase.setEnabled(ResourceCenter.getInstance().getPersistence().supportsRoAccessRepository());
 		actionLoadFromDatabase.setText("Load from DB");
 		actionLoadFromDatabase.setToolTipText(
 				"Loads the messages from the RO_ACCESS_REPORTS database in " +
@@ -189,30 +171,14 @@ public class ROAccessReportsView extends TableViewPart implements MessageHandler
 		actionClearDB = new Action() {
 			@Override
 			public void run() {
-				Repository repo = ResourceCenter.getInstance().getRepository();
-				if (null == repo) return;
-				ROAccessReportsRepository rorepo = repo.getROAccessRepository();
-				if (null == rorepo) return;
-				
-				try {
-					rorepo.clear();
-					getViewer().getTable().removeAll();
-				} catch (Exception e) {
-					log.error(
-							String.format("could not clear db: %s",
-									e.getMessage()));
-				}
-				
+				ResourceCenter.getInstance().getPersistence().clearRoAccessReports();
+				getViewer().getTable().removeAll();
 			}
 		};
-		if ((null != repo) && (null != repo.getROAccessRepository())) {
-			actionClearDB.setEnabled(true);
-		} else {
-			actionClearDB.setEnabled(false);
-		}
+
+		actionClearDB.setEnabled(ResourceCenter.getInstance().getPersistence().supportsRoAccessRepository());
 		actionClearDB.setText("Clear Database");
-		actionClearDB.setToolTipText(
-				"Delete all the messages from the database.");
+		actionClearDB.setToolTipText("Delete all the messages from the database.");
 		
 		getViewer().addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {

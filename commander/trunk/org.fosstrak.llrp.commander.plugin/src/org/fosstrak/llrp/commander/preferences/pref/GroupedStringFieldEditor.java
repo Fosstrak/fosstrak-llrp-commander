@@ -21,9 +21,6 @@
 
 package org.fosstrak.llrp.commander.preferences.pref;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -43,15 +40,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
-import org.fosstrak.llrp.client.Repository;
-import org.fosstrak.llrp.client.RepositoryFactory;
 import org.fosstrak.llrp.client.repository.sql.MySQLRepository;
 import org.fosstrak.llrp.client.repository.sql.PostgreSQLRepository;
 import org.fosstrak.llrp.commander.LLRPPlugin;
 import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.persistence.exception.PersistenceException;
+import org.fosstrak.llrp.commander.persistence.type.PersistenceDescriptor;
 import org.fosstrak.llrp.commander.preferences.PreferenceConstants;
-import org.llrp.ltk.generated.messages.RO_ACCESS_REPORT;
 
 /**
  * An extension of the {@link FieldEditor} supporting the grouping of several 
@@ -85,10 +80,7 @@ public class GroupedStringFieldEditor extends FieldEditor  {
 	
 	// a 2D array holding the labels and the names of the preferences.
 	private String[][] preferencesLabelsAndNames;
-	
-	// a handle to the repository (if test and switch is used).
-	private Repository repository = null;
-	
+		
 	// log4j instance.
 	private static Logger log = Logger.getLogger(GroupedStringFieldEditor.class);
 	
@@ -129,34 +121,18 @@ public class GroupedStringFieldEditor extends FieldEditor  {
 	}
 	
 	/**
-	 * @return a hash map containing the settings for the repository creation.
+	 * @return a descriptor for the persistence container (repository) to use.
 	 */
-	private Map<String, String> prepArgs() {
-		Map<String, String> args = new HashMap<String, String> ();
-  	  	args.put(
-  			  RepositoryFactory.ARG_WIPE_DB,
-  			  String.format("%b", false));
-  	  	
-  	  	args.put(
-  			  RepositoryFactory.ARG_WIPE_RO_ACCESS_REPORTS_DB, 
-  			  String.format("%b", false));
-  	  	
-  	  	args.put(RepositoryFactory.ARG_USERNAME,
-  			  preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_USERNAME)]
-  			              .getText());
-  	  	
-  	  	args.put(RepositoryFactory.ARG_PASSWRD,
-  			  preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_PWD)]
-  			              .getText());
-  	  	
-  	  	args.put(RepositoryFactory.ARG_JDBC_STRING,
-  			  preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_JDBC)]
-  			              .getText());
-  	  	
-  	  	args.put(RepositoryFactory.ARG_DB_CLASSNAME,
-  			  preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_IMPLEMENTOR)]
-  			              .getText());
-  	  	return args;
+	private PersistenceDescriptor prepareDescriptor() {
+		return new PersistenceDescriptor(
+				Boolean.parseBoolean(preferences[getPrefIndex(PreferenceConstants.P_WIPE_DB_ON_STARTUP)].getText()),
+				Boolean.parseBoolean(preferences[getPrefIndex(PreferenceConstants.P_WIPE_RO_ACCESS_REPORTS_ON_STARTUP)].getText()),
+				Boolean.parseBoolean(preferences[getPrefIndex(PreferenceConstants.P_LOG_RO_ACCESS_REPORTS)].getText()),
+				preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_USERNAME)].getText(),
+				preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_PWD)].getText(),
+				preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_JDBC)].getText(),
+				preferences[getPrefIndex(PreferenceConstants.P_EXT_DB_IMPLEMENTOR)].getText()
+				);
 	}
 	
 	/**
@@ -188,32 +164,22 @@ public class GroupedStringFieldEditor extends FieldEditor  {
 			buttonSwitch.addSelectionListener(new SelectionAdapter() {
 			      public void widgetSelected(SelectionEvent e) {
 			    	  // try to open the repository. if it works out, switch it.
-							
+			    	  PersistenceDescriptor descriptor = prepareDescriptor();
 			    	  try {
-						repository = RepositoryFactory.create(
-								prepArgs());
-						buttonSwitch.setEnabled(false);
-					
-						Repository old = ResourceCenter.getInstance().
-							setRepository(repository);
-						if (null != old.getROAccessRepository()) {
-							AdaptorManagement.getInstance().deregisterPartialHandler(
-									old.getROAccessRepository(), RO_ACCESS_REPORT.class);
-						}
-						// stop the old repository
-						try {
-							old.close();
-						} catch (Exception repoE) {
-							log.error("Old repository could not be stopped.");
-						}
-					} catch (Exception e1) {
-						IStatus status = new Status(
-								IStatus.ERROR, LLRPPlugin.PLUGIN_ID, 
-								"LLRP Repository Error.", e1);
-						ErrorDialog.openError(shell, 
-								"Repository Error", e1.getMessage(), status);
-						repository = null;
-					}
+			    		  if (!ResourceCenter.getInstance().getPersistence().change(descriptor)) {
+			    			  log.debug("We do not allow to set the same repository.");
+			    			  String notice = "Your selection is currently in use.";
+			    			  IStatus status = new Status(IStatus.INFO, LLRPPlugin.PLUGIN_ID, notice);
+			    			  ErrorDialog.openError(shell, "Please Notice: " + notice, notice, status);
+			    		  } else {
+								buttonSwitch.setEnabled(false);
+			    		  }
+			    	  } catch (PersistenceException persExce) {
+			    		  log.error("Could not test the repository.", persExce);
+						
+			    		  IStatus status = new Status(IStatus.ERROR, LLRPPlugin.PLUGIN_ID, "LLRP Repository Error.", persExce);
+			    		  ErrorDialog.openError(shell, "Repository Error", persExce.getMessage(), status);
+			    	  }
 			      }
 			    });
 			
@@ -221,40 +187,26 @@ public class GroupedStringFieldEditor extends FieldEditor  {
 			buttonTest.setText("Test configuration");
 			buttonTest.addSelectionListener(new SelectionAdapter() {
 			      public void widgetSelected(SelectionEvent e) {
-			    	  // try to open the repository. if it works out, switch it.
-			    	  Map<String, String> args = prepArgs();
-			    	  if (args.get(RepositoryFactory.ARG_DB_CLASSNAME).
-			    			  equals(
-			    					  ResourceCenter.getInstance()
-			    					  .getRepository().getClass().getName())) {
-			    		  log.debug("We not allow to set the same repository.");
-			    		  String notice = "Your selection is currently in use.";
-			    		  IStatus status = new Status(
-									IStatus.INFO, LLRPPlugin.PLUGIN_ID, 
-									notice);
-							ErrorDialog.openError(shell, 
-									"Please Notice: " + notice, 
-									notice, 
-									status);
-						return;
-					  }
-							
+			    	  // try to open the repository. if it works out, allow to switch it.
+			    	  PersistenceDescriptor descriptor = prepareDescriptor();
 			    	  try {
-						repository = RepositoryFactory.create(
-								args);
-						repository.close();
-						repository = null;
-						buttonSwitch.setEnabled(true);
-					} catch (Exception e1) {
-						IStatus status = new Status(
-								IStatus.ERROR, LLRPPlugin.PLUGIN_ID, 
-								"LLRP Repository Error.", e1);
-						ErrorDialog.openError(shell, 
-								"Repository Error", e1.getMessage(), status);
-						repository = null;
-					}
+			    		  if (!ResourceCenter.getInstance().getPersistence().test(descriptor)) {
+			    			  log.debug("We do not allow to set the same repository.");
+			    			  String notice = "Your selection is currently in use.";
+			    			  IStatus status = new Status(IStatus.INFO, LLRPPlugin.PLUGIN_ID, notice);
+			    			  ErrorDialog.openError(shell, "Please Notice: " + notice, notice, status);
+			    		  } else {
+			    			  buttonSwitch.setEnabled(true);
+			    		  }
+			    	  } catch (PersistenceException persExce) {
+			    		  log.error("Could not test the repository.", persExce);
+						
+			    		  IStatus status = new Status(IStatus.ERROR, LLRPPlugin.PLUGIN_ID, "LLRP Repository Error.", persExce);
+			    		  ErrorDialog.openError(shell, "Repository Error", persExce.getMessage(), status);
+			    	  }  
 			      }
-			    });
+				}
+			);
 			
 		
 			// create the graphical representation of the labels and the 

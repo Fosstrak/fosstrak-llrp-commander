@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.fosstrak.llrp.commander.type.MessageConstants;
 
 /**
  * Wizard Page that lets the user enter the folder, the file name and the 
@@ -53,35 +55,35 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
  */
 public class NewLLRPMessageWizardPage extends WizardPage {
 	
-	private final String WIZARD_PAGE_TITLE = "LLRP Message";
-	private final String WIZARD_PAGE_DESCRIPTION = "Create a new LLRP message.";
-	private final String FILE_EXTENSION = "llrp";
+	private static final String WIZARD_PAGE_TITLE = "LLRP Message";
+	private static final String WIZARD_PAGE_DESCRIPTION = "Create a new LLRP message.";
+	private static final String FILE_EXTENSION = "llrp";
 	
-	private final String DEFAULT_MESSAGE_TYPE = "ADD_ROSPEC";
+	private static final String DEFAULT_MESSAGE_TYPE = MessageConstants.ADD_ROSPEC;
 	
-	private final String[] MESSAGE_TYPES = {
-			"GET_READER_CAPABILITIES",
-			"GET_READER_CONFIG",
-			"SET_READER_CONFIG",
+	private static final String[] MESSAGE_TYPES = {
+			MessageConstants.GET_READER_CAPABILITIES,
+			MessageConstants.GET_READER_CONFIG,
+			MessageConstants.SET_READER_CONFIG,
 			
-			"GET_ROSPECS",
-			"ADD_ROSPEC",
-			"ENABLE_ROSPEC",
-			"DISABLE_ROSPEC",
-			"START_ROSPEC",
-			"STOP_ROSPEC",
-			"DELETE_ROSPEC",
+			MessageConstants.GET_ROSPECS,
+			MessageConstants.ADD_ROSPEC,
+			MessageConstants.ENABLE_ROSPEC,
+			MessageConstants.DISABLE_ROSPEC,
+			MessageConstants.START_ROSPEC,
+			MessageConstants.STOP_ROSPEC,
+			MessageConstants.DELETE_ROSPEC,
 			
-			"GET_ACCESSSPECS",
-			"ADD_ACCESSSPEC",
-			"ENABLE_ACCESSSPEC",
-			"DISABLE_ACCESSSPEC",
-			"DELETE_ACCESSSPEC",
+			MessageConstants.GET_ACCESSSPECS,
+			MessageConstants.ADD_ACCESSSPEC,
+			MessageConstants.ENABLE_ACCESSSPEC,
+			MessageConstants.DISABLE_ACCESSSPEC,
+			MessageConstants.DELETE_ACCESSSPEC,
 			
-			"GET_REPORT",
-			"ENABLE_EVENTS_AND_REPORTS",
-			"CLOSE_CONNECTION",
-			"CUSTOM_MESSAGE",
+			MessageConstants.GET_REPORT,
+			MessageConstants.ENABLE_EVENTS_AND_REPORTS,
+			MessageConstants.CLOSE_CONNECTION,
+			MessageConstants.CUSTOM_MESSAGE,
 	};
 	
 	private Text folderText;

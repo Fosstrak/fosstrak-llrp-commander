@@ -59,15 +59,15 @@ public class AddFCDialog extends ConnectDialog {
 	 */
 	public AddFCDialog(Shell aShell) {
 		super(aShell, "Add Adapter");
-		FIELDS = new String[] { "Adapter Name", "IP" };
-		DEFAULTS = new String [] { "AdapterName", "127.0.0.1" };
+		setFieldsLabels(new String[] { "Adapter Name", "IP" });
+		setFieldsDefaultValues(new String [] { "AdapterName", "127.0.0.1" });
 	}
 
 	/**
 	 * @return Logical Name of connection resource
 	 */
 	public String getName() {
-		return values[VALUE_NAME];
+		return getValues()[VALUE_NAME];
 	}
 	
 	/**
@@ -83,7 +83,7 @@ public class AddFCDialog extends ConnectDialog {
 	 * @return IP Address of connection resource
 	 */
 	public String getIP() {
-		return values[VALUE_IP];
+		return getValues()[VALUE_IP];
 	}
 	
 	@Override
@@ -115,12 +115,12 @@ public class AddFCDialog extends ConnectDialog {
 	protected void addOKButton(Composite parent) {
 		final Button btnOK = new Button(parent, SWT.PUSH);
 		btnOK.setText("OK");
-		btnOK.setLayoutData(gridLabel);
+		btnOK.setLayoutData(getGridLabel());
 		
 		btnOK.addSelectionListener(new SelectionAdapter() {
 		      public void widgetSelected(SelectionEvent e) {
-		    	  for (int i=0; i<DEFAULTS.length; i++) {
-		    		  values[i] = txts[i].getText();
+		    	  for (int i=0; i<getFieldsDefaultValues().length; i++) {
+		    		  getValues()[i] = getTxts()[i].getText();
 		    	  }
 		    	  
 		    	  isLocalAdapter = localAdapter.getSelection();

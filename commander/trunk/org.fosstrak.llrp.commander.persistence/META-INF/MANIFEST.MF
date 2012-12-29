@@ -1,22 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: org.fosstrak.llrp.commander.commons
-Bundle-SymbolicName: org.fosstrak.llrp.commander.commons;singleton:=true
+Bundle-Name: org.fosstrak.llrp.commander.persistence
+Bundle-SymbolicName: org.fosstrak.llrp.commander.persistence;singleton:=true
 Bundle-Version: 1.1.1.qualifier
-Require-Bundle: org.eclipse.jface;bundle-version="3.8.0",
- org.eclipse.jface.text;bundle-version="3.8.0",
- org.eclipse.ui.editors;bundle-version="3.8.0",
- org.eclipse.core.runtime;bundle-version="3.8.0",
- org.apache.commons.lang;bundle-version="2.6.0",
- org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1"
+Require-Bundle: org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1",
+ org.fosstrak.llrp.commander.commons;bundle-version="1.1.1"
 Import-Package: org.apache.log4j
 Bundle-Vendor: ETH Zurich
-Export-Package: org.fosstrak.llrp.commander.provider,
- org.fosstrak.llrp.commander.type,
- org.fosstrak.llrp.commander.util,
- org.fosstrak.llrp.commander.xml.type
 Bundle-ClassPath: .,
- llrp-adaptor-1.2.1-SNAPSHOT.jar,
+ llrp-adaptor-1.2.1.jar,
  mina-core-1.1.7.jar,
  derby-10.4.1.3.jar,
  mysql-connector-java-5.1.6.jar,
@@ -36,4 +28,8 @@ Bundle-ClassPath: .,
  commons-digester-1.8.jar,
  commons-beanutils-1.7.0.jar,
  commons-beanutils-core-1.7.0.jar
+Export-Package: org.fosstrak.llrp.commander.persistence,
+ org.fosstrak.llrp.commander.persistence.exception,
+ org.fosstrak.llrp.commander.persistence.impl,
+ org.fosstrak.llrp.commander.persistence.type
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

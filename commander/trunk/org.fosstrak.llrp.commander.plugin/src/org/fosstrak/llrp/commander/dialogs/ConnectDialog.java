@@ -40,8 +40,8 @@ import org.eclipse.swt.widgets.Text;
  * the two members FIELDS and DEFAULTS as arrays providing the labels and the 
  * default values for the fields available. <br/>
  * <br/>
- * <code>FIELDS = new String[]{ "test", "me" };</code><br/>
- * <code>DEFAULTS = new String [] { "myTestDefault", "memuuDefault" };</code><br/>
+ * <code>setFieldsLabels(new String[]{ "test", "me" });</code><br/>
+ * <code>setFieldsDefaultValues(new String [] { "myTestDefault", "memuuDefault" });</code><br/>
  * will create two fields with labels "test" and "me" with the respective 
  * default values.
  * 
@@ -51,28 +51,28 @@ import org.eclipse.swt.widgets.Text;
 public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 	
 	/** the label of the fields. */
-	public String [] FIELDS;
+	private String [] fieldsLabels;
 	
 	/** the default values for the fields. */
-	public String [] DEFAULTS;
+	private String [] fieldsDefaultValues;
 	
 	/** the values collected from the fields. */
-	public String [] values;
+	private String [] values;
 	
 	/** the text fields. */
-	protected Text []txts;
+	private Text [] txts;
 	
 	/** the caption. */
-	protected final String caption;
+	private final String caption;
 	
 	/** the grid settings for the label fields. */
-	protected GridData gridLabel = new GridData(GridData.FILL_BOTH);
+	private GridData gridLabel = new GridData(GridData.FILL_BOTH);
 	
 	/** the grid settings for the text fields. */
-	protected GridData gridText = new GridData(GridData.FILL_BOTH);
+	private GridData gridText = new GridData(GridData.FILL_BOTH);
 	
 	/** the grid settings for a horizontal filler. */
-	protected GridData gridAll = new GridData(GridData.FILL_BOTH);
+	private GridData gridAll = new GridData(GridData.FILL_BOTH);
 	
 	/**
 	 * create a new connect dialog.
@@ -92,19 +92,19 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 3;
 		
-		gridLabel.verticalSpan = 1;
-		gridLabel.horizontalSpan = 1;
-		gridLabel.widthHint=100;
-		gridLabel.heightHint = 20;
+		getGridLabel().verticalSpan = 1;
+		getGridLabel().horizontalSpan = 1;
+		getGridLabel().widthHint=100;
+		getGridLabel().heightHint = 20;
 
-		gridText.verticalSpan = 1;
-		gridText.horizontalSpan = 2;
-		gridText.widthHint=200;	
-		gridText.heightHint = 20;
+		getGridText().verticalSpan = 1;
+		getGridText().horizontalSpan = 2;
+		getGridText().widthHint=200;	
+		getGridText().heightHint = 20;
 
-		gridAll.verticalSpan = 1;
-		gridAll.horizontalSpan = 3;
-		gridAll.heightHint = 20;
+		getGridAll().verticalSpan = 1;
+		getGridAll().horizontalSpan = 3;
+		getGridAll().heightHint = 20;
 		
 		parent.getShell().setLayout(layout);
 		parent.getShell().setText(caption);
@@ -116,11 +116,11 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 	 */
 	protected void registerTextFieldListeners(Button btnOK) {
 		// add the selection listeners.
-		for (int i=0; i<DEFAULTS.length; i++) {
-			Listener listener = getListener(txts[i], i, btnOK);
+		for (int i=0; i<getFieldsDefaultValues().length; i++) {
+			Listener listener = getListener(getTxts()[i], i, btnOK);
 			if (null != listener) {
 				// add a listener
-				txts[i].addListener(SWT.Modify, listener);
+				getTxts()[i].addListener(SWT.Modify, listener);
 			}
 		}
 	}
@@ -130,16 +130,16 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 	 * @param parent the parent where to add.
 	 */
 	protected void addTextFields(Composite parent) {
-		values = new String[DEFAULTS.length];
-		txts = new Text[DEFAULTS.length];
-		for (int i=0; i<FIELDS.length; i++) {
+		setValues(new String[getFieldsDefaultValues().length]);
+		setTxts(new Text[getFieldsDefaultValues().length]);
+		for (int i=0; i<getFieldsLabels().length; i++) {
 			Label label = new Label(parent, SWT.NONE);
-			label.setText(FIELDS[i]);
-			label.setLayoutData(gridLabel);
+			label.setText(getFieldsLabels()[i]);
+			label.setLayoutData(getGridLabel());
 			
-			txts[i] = new Text(parent, SWT.BORDER);
-			txts[i].setText(DEFAULTS[i]);
-			txts[i].setLayoutData(gridText);
+			getTxts()[i] = new Text(parent, SWT.BORDER);
+			getTxts()[i].setText(getFieldsDefaultValues()[i]);
+			getTxts()[i].setLayoutData(getGridText());
 		}
 	}
 	
@@ -150,7 +150,7 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 	protected void addCancelButton(Composite parent) {		
 		final Button btnCancel = new Button(parent, SWT.PUSH);
 		btnCancel.setText("Cancel");
-		btnCancel.setLayoutData(gridLabel);
+		btnCancel.setLayoutData(getGridLabel());
 		btnCancel.addSelectionListener(new SelectionAdapter() {
 		      public void widgetSelected(SelectionEvent e) {
 		    	  setReturnCode(Window.CANCEL);
@@ -166,12 +166,12 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 	protected void addOKButton(Composite parent) {
 		final Button btnOK = new Button(parent, SWT.PUSH);
 		btnOK.setText("OK");
-		btnOK.setLayoutData(gridLabel);
+		btnOK.setLayoutData(getGridLabel());
 		
 		btnOK.addSelectionListener(new SelectionAdapter() {
 		      public void widgetSelected(SelectionEvent e) {
-		    	  for (int i=0; i<DEFAULTS.length; i++) {
-		    		  values[i] = txts[i].getText();
+		    	  for (int i=0; i<getFieldsDefaultValues().length; i++) {
+		    		  getValues()[i] = getTxts()[i].getText();
 		    	  }
 				
 		    	  setReturnCode(Window.OK);
@@ -180,11 +180,11 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 		    });
 		
 		// add the selection listeners.
-		for (int i=0; i<DEFAULTS.length; i++) {
-			Listener listener = getListener(txts[i], i, btnOK);
+		for (int i=0; i<getFieldsDefaultValues().length; i++) {
+			Listener listener = getListener(getTxts()[i], i, btnOK);
 			if (null != listener) {
 				// add a listener
-				txts[i].addListener(SWT.Modify, listener);
+				getTxts()[i].addListener(SWT.Modify, listener);
 			}
 		}
 	}
@@ -197,7 +197,7 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 		// empty invisible button to make nice alignment
 		final Button none = new Button(parent, SWT.NONE);
 		none.setVisible(false);
-		none.setLayoutData(gridLabel);
+		none.setLayoutData(getGridLabel());
 	}
 	
 	/**
@@ -226,4 +226,109 @@ public abstract class ConnectDialog extends org.eclipse.jface.dialogs.Dialog {
 	 * @return null if no constraint, otherwise the listener.
 	 */
 	public abstract Listener getListener(final Text txt, int offset, final Button ok);
+
+	/**
+	 * @return access to the fields labels.
+	 */
+	protected String [] getFieldsLabels() {
+		return fieldsLabels;
+	}
+
+	/**
+	 * set the new fields labels.
+	 * @param fieldsLabels the new labels.
+	 */
+	protected void setFieldsLabels(String [] fieldsLabels) {
+		this.fieldsLabels = fieldsLabels;
+	}
+
+	/**
+	 * @return access to the fields default values.
+	 */
+	protected String [] getFieldsDefaultValues() {
+		return fieldsDefaultValues;
+	}
+
+	/**
+	 * set the fields new default values.
+	 * @param fieldsDefaultValues the new default values.
+	 */
+	protected void setFieldsDefaultValues(String [] fieldsDefaultValues) {
+		this.fieldsDefaultValues = fieldsDefaultValues;
+	}
+
+	/**
+	 * @return handle to the values.
+	 */
+	protected String [] getValues() {
+		return values;
+	}
+
+	/**
+	 * set the new values.
+	 * @param values the new values.
+	 */
+	protected void setValues(String [] values) {
+		this.values = values;
+	}
+
+	/**
+	 * @return handle to the texts.
+	 */
+	protected Text [] getTxts() {
+		return txts;
+	}
+
+	/**
+	 * sets all the texts.
+	 * @param txts the new texts to be used.
+	 */
+	protected void setTxts(Text [] txts) {
+		this.txts = txts;
+	}
+
+	/**
+	 * @return access to the grid label.
+	 */
+	protected GridData getGridLabel() {
+		return gridLabel;
+	}
+
+	/**
+	 * sets the grid label.
+	 * @param gridLabel the new grid label.
+	 */
+	protected void setGridLabel(GridData gridLabel) {
+		this.gridLabel = gridLabel;
+	}
+
+	/**
+	 * @return access to the grid text.
+	 */
+	protected GridData getGridText() {
+		return gridText;
+	}
+
+	/**
+	 * set a new grid text.
+	 * @param gridText the new grid text.
+	 */
+	protected void setGridText(GridData gridText) {
+		this.gridText = gridText;
+	}
+
+	/**
+	 * @return access to the grid alignment.
+	 */
+	protected GridData getGridAll() {
+		return gridAll;
+	}
+
+	/**
+	 * sets the grid alignment.
+	 * @param gridAll the new grid alignment to use.
+	 */
+	protected void setGridAll(GridData gridAll) {
+		this.gridAll = gridAll;
+	}
 }

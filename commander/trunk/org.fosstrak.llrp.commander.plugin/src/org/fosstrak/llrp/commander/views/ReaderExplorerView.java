@@ -23,6 +23,7 @@ package org.fosstrak.llrp.commander.views;
 
 import java.rmi.RemoteException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -57,6 +58,7 @@ import org.fosstrak.llrp.commander.ResourceCenter;
 import org.fosstrak.llrp.commander.dialogs.AddFCDialog;
 import org.fosstrak.llrp.commander.dialogs.AddReaderDialog;
 import org.fosstrak.llrp.commander.dialogs.ReaderSettingsDialog;
+import org.fosstrak.llrp.commander.type.MessageConstants;
 import org.fosstrak.llrp.commander.util.LLRPConstraints;
 import org.fosstrak.llrp.commander.util.LLRPFactory;
 import org.fosstrak.llrp.commander.util.LLRPRangeConstraint;
@@ -87,7 +89,7 @@ public class ReaderExplorerView extends ViewPart {
 	/**
 	 * Log4j instance.
 	 */
-	private static Logger log = Logger.getLogger(ReaderExplorerView.class);
+	private static final Logger log = Logger.getLogger(ReaderExplorerView.class);
 
 	/**
 	 * JFace Tree control for Reader hierarchy.
@@ -352,9 +354,6 @@ public class ReaderExplorerView extends ViewPart {
 				manager.add(actionAddReader);
 			}
 		}
-		// drillDownAdapter.addNavigationActions(manager);
-		// Other plug-ins can contribute there actions here
-		// manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
@@ -584,20 +583,20 @@ public class ReaderExplorerView extends ViewPart {
 		actionReaderSettings.setText("Settings");
 		actionReaderSettings.setToolTipText("Settings for the reader");
 
-		actionGetReaderCapabilities = createSendMessageAction("GET_READER_CAPABILITIES");
-		actionGetReaderConfig = createSendMessageAction("GET_READER_CONFIG");
+		actionGetReaderCapabilities = createSendMessageAction(MessageConstants.GET_READER_CAPABILITIES);
+		actionGetReaderConfig = createSendMessageAction(MessageConstants.GET_READER_CONFIG);
 
-		actionGetRospecs = createSendMessageAction("GET_ROSPECS");
-		actionEnableRospec = createSendMessageAction("ENABLE_ROSPEC");
-		actionDisableRospec = createSendMessageAction("DISABLE_ROSPEC");
-		actionStartRospec = createSendMessageAction("START_ROSPEC");
-		actionStopRospec = createSendMessageAction("STOP_ROSPEC");
-		actionDeleteRospec = createSendMessageAction("DELETE_ROSPEC");
+		actionGetRospecs = createSendMessageAction(MessageConstants.GET_ROSPECS);
+		actionEnableRospec = createSendMessageAction(MessageConstants.ENABLE_ROSPEC);
+		actionDisableRospec = createSendMessageAction(MessageConstants.DISABLE_ROSPEC);
+		actionStartRospec = createSendMessageAction(MessageConstants.START_ROSPEC);
+		actionStopRospec = createSendMessageAction(MessageConstants.STOP_ROSPEC);
+		actionDeleteRospec = createSendMessageAction(MessageConstants.DELETE_ROSPEC);
 
 		actionGetAccessspecs = createSendMessageAction("GET_ACCESSSPECS");
-		actionEnableAccessspec = createSendMessageAction("ENABLE_ACCESSSPEC");
-		actionDisableAccessspec = createSendMessageAction("DISABLE_ACCESSSPEC");
-		actionDeleteAccessspec = createSendMessageAction("DELETE_ACCESSSPEC");
+		actionEnableAccessspec = createSendMessageAction(MessageConstants.ENABLE_ACCESSSPEC);
+		actionDisableAccessspec = createSendMessageAction(MessageConstants.DISABLE_ACCESSSPEC);
+		actionDeleteAccessspec = createSendMessageAction(MessageConstants.DELETE_ACCESSSPEC);
 
 		// action to remove a remote instance of an adaptor
 		actionRemoveAdaptor = new Action() {
@@ -645,14 +644,14 @@ public class ReaderExplorerView extends ViewPart {
 				if ((null != currentSelectedReader)
 						&& (currentSelectedReader.isReader())) {
 					LLRPMessage message;
-					if (messageName.equals("DELETE_ROSPEC")) {
+					if (messageName.equals(MessageConstants.DELETE_ROSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "ROSpecID:", "1",
-								new IDValidator("ROSpecID", "DELETE_ROSPEC"));
+								.getShell(), messageName, MessageConstants.RO_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.RO_SPEC_ID, MessageConstants.DELETE_ROSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (DELETE_ROSPEC) LLRPFactory
-										.createLLRPMessage("DELETE_ROSPEC");
+										.createLLRPMessage(MessageConstants.DELETE_ROSPEC);
 								UnsignedInteger rOSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((DELETE_ROSPEC) message).setROSpecID(rOSpecID);
@@ -663,14 +662,14 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("START_ROSPEC")) {
+					} else if (messageName.equals(MessageConstants.START_ROSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "ROSpecID:", "1",
-								new IDValidator("ROSpecID", "START_ROSPEC"));
+								.getShell(), messageName, MessageConstants.RO_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.RO_SPEC_ID, MessageConstants.START_ROSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (START_ROSPEC) LLRPFactory
-										.createLLRPMessage("START_ROSPEC");
+										.createLLRPMessage(MessageConstants.START_ROSPEC);
 								UnsignedInteger rOSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((START_ROSPEC) message).setROSpecID(rOSpecID);
@@ -681,14 +680,14 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("STOP_ROSPEC")) {
+					} else if (messageName.equals(MessageConstants.STOP_ROSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "ROSpecID:", "1",
-								new IDValidator("ROSpecID", "STOP_ROSPEC"));
+								.getShell(), messageName, MessageConstants.RO_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.RO_SPEC_ID, MessageConstants.STOP_ROSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (STOP_ROSPEC) LLRPFactory
-										.createLLRPMessage("STOP_ROSPEC");
+										.createLLRPMessage(MessageConstants.STOP_ROSPEC);
 								UnsignedInteger rOSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((STOP_ROSPEC) message).setROSpecID(rOSpecID);
@@ -699,14 +698,14 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("ENABLE_ROSPEC")) {
+					} else if (messageName.equals(MessageConstants.ENABLE_ROSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "ROSpecID:", "1",
-								new IDValidator("ROSpecID", "ENABLE_ROSPEC"));
+								.getShell(), messageName, MessageConstants.RO_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.RO_SPEC_ID, MessageConstants.ENABLE_ROSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (ENABLE_ROSPEC) LLRPFactory
-										.createLLRPMessage("ENABLE_ROSPEC");
+										.createLLRPMessage(MessageConstants.ENABLE_ROSPEC);
 								UnsignedInteger rOSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((ENABLE_ROSPEC) message).setROSpecID(rOSpecID);
@@ -717,14 +716,14 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("DISABLE_ROSPEC")) {
+					} else if (messageName.equals(MessageConstants.DISABLE_ROSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "ROSpecID:", "1",
-								new IDValidator("ROSpecID", "DISABLE_ROSPEC"));
+								.getShell(), messageName, MessageConstants.RO_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.RO_SPEC_ID, MessageConstants.DISABLE_ROSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (DISABLE_ROSPEC) LLRPFactory
-										.createLLRPMessage("DISABLE_ROSPEC");
+										.createLLRPMessage(MessageConstants.DISABLE_ROSPEC);
 								UnsignedInteger rOSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((DISABLE_ROSPEC) message)
@@ -736,15 +735,15 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("DELETE_ACCESSSPEC")) {
+					} else if (messageName.equals(MessageConstants.DELETE_ACCESSSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "AccessSpecID:", "1",
-								new IDValidator("AccessSpecID",
-										"DELETE_ACCESSSPEC"));
+								.getShell(), messageName, MessageConstants.ACCESS_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.ACCESS_SPEC_ID,
+										MessageConstants.DELETE_ACCESSSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (DELETE_ACCESSSPEC) LLRPFactory
-										.createLLRPMessage("DELETE_ACCESSSPEC");
+										.createLLRPMessage(MessageConstants.DELETE_ACCESSSPEC);
 								UnsignedInteger accessSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((DELETE_ACCESSSPEC) message)
@@ -756,15 +755,15 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("ENABLE_ACCESSSPEC")) {
+					} else if (messageName.equals(MessageConstants.ENABLE_ACCESSSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "AccessSpecID:", "1",
-								new IDValidator("AccessSpecID",
-										"ENABLE_ACCESSSPEC"));
+								.getShell(), messageName, MessageConstants.ACCESS_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.ACCESS_SPEC_ID,
+										MessageConstants.ENABLE_ACCESSSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (ENABLE_ACCESSSPEC) LLRPFactory
-										.createLLRPMessage("ENABLE_ACCESSSPEC");
+										.createLLRPMessage(MessageConstants.ENABLE_ACCESSSPEC);
 								UnsignedInteger accessSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((ENABLE_ACCESSSPEC) message)
@@ -776,15 +775,15 @@ public class ReaderExplorerView extends ViewPart {
 						} else {
 							return;
 						}
-					} else if (messageName.equals("DISABLE_ACCESSSPEC")) {
+					} else if (messageName.equals(MessageConstants.DISABLE_ACCESSSPEC)) {
 						InputDialog dlg = new InputDialog(viewer.getControl()
-								.getShell(), messageName, "AccessSpecID:", "1",
-								new IDValidator("AccessSpecID",
-										"DISABLE_ACCESSSPEC"));
+								.getShell(), messageName, MessageConstants.ACCESS_SPEC_ID + ":", "1",
+								new IDValidator(MessageConstants.ACCESS_SPEC_ID,
+										MessageConstants.DISABLE_ACCESSSPEC));
 						if (dlg.open() == Window.OK) {
 							try {
 								message = (DISABLE_ACCESSSPEC) LLRPFactory
-										.createLLRPMessage("DISABLE_ACCESSSPEC");
+										.createLLRPMessage(MessageConstants.DISABLE_ACCESSSPEC);
 								UnsignedInteger accessSpecID = new UnsignedInteger(
 										dlg.getValue());
 								((DISABLE_ACCESSSPEC) message)
@@ -807,14 +806,14 @@ public class ReaderExplorerView extends ViewPart {
 				}
 			}
 		};
-		if (messageName.equals("ENABLE_ROSPEC")
-				|| messageName.equals("DISABLE_ROSPEC")
-				|| messageName.equals("START_ROSPEC")
-				|| messageName.equals("STOP_ROSPEC")
-				|| messageName.equals("DELETE_ROSPEC")
-				|| messageName.equals("ENABLE_ACCESSSPEC")
-				|| messageName.equals("DISABLE_ACCESSSPEC")
-				|| messageName.equals("DELETE_ACCESSSPEC")) {
+		if (messageName.equals(MessageConstants.ENABLE_ROSPEC)
+				|| messageName.equals(MessageConstants.DISABLE_ROSPEC)
+				|| messageName.equals(MessageConstants.START_ROSPEC)
+				|| messageName.equals(MessageConstants.STOP_ROSPEC)
+				|| messageName.equals(MessageConstants.DELETE_ROSPEC)
+				|| messageName.equals(MessageConstants.ENABLE_ACCESSSPEC)
+				|| messageName.equals(MessageConstants.DISABLE_ACCESSSPEC)
+				|| messageName.equals(MessageConstants.DELETE_ACCESSSPEC)) {
 			result.setText(messageName + "...");
 		} else {
 			result.setText(messageName);
@@ -918,7 +917,7 @@ public class ReaderExplorerView extends ViewPart {
 		 * <br/>
 		 * If this validator should validate the ROSpecID field of the
 		 * START_ROSPEC message, you should call
-		 * <code>new ROSpecIDValidator("ROSpecID", "START_ROSPEC")</code>.
+		 * <code>new ROSpecIDValidator(MessageConstants.RO_SPEC_ID, MessageConstants.START_ROSPEC)</code>.
 		 * 
 		 * @param iDName
 		 *            the name of the ID to validate
@@ -951,7 +950,7 @@ public class ReaderExplorerView extends ViewPart {
 				}
 				return null;
 			} catch (Exception e) {
-				return "";
+				return StringUtils.EMPTY;
 			}
 		}
 	}

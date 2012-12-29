@@ -32,11 +32,13 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -62,12 +64,11 @@ import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.client.LLRPExceptionHandlerTypeMap;
 import org.fosstrak.llrp.client.LLRPMessageItem;
 import org.fosstrak.llrp.client.MessageHandler;
-import org.fosstrak.llrp.client.ROAccessReportsRepository;
-import org.fosstrak.llrp.client.Repository;
-import org.fosstrak.llrp.client.RepositoryFactory;
-import org.fosstrak.llrp.client.repository.sql.DerbyRepository;
+import org.fosstrak.llrp.commander.persistence.Persistence;
+import org.fosstrak.llrp.commander.persistence.exception.PersistenceException;
+import org.fosstrak.llrp.commander.persistence.impl.PersistenceImpl;
+import org.fosstrak.llrp.commander.persistence.type.PersistenceDescriptor;
 import org.fosstrak.llrp.commander.preferences.PreferenceConstants;
-import org.fosstrak.llrp.commander.repository.MessageModel;
 import org.fosstrak.llrp.commander.util.JarFolderExtractor;
 import org.fosstrak.llrp.commander.util.LLRP;
 import org.fosstrak.llrp.commander.util.MessageBoxRefresh;
@@ -77,7 +78,6 @@ import org.fosstrak.tdt.TDTEngine;
 import org.jdom.Document;
 import org.llrp.ltk.exceptions.InvalidLLRPMessageException;
 import org.llrp.ltk.generated.LLRPMessageFactory;
-import org.llrp.ltk.generated.messages.RO_ACCESS_REPORT;
 import org.llrp.ltk.generated.parameters.LLRPStatus;
 import org.llrp.ltk.types.LLRPMessage;
 
@@ -89,53 +89,51 @@ import org.llrp.ltk.types.LLRPMessage;
  * @author sawielan
  * @version 1.0
  */
-public class ResourceCenter {
+public final class ResourceCenter {
 
 	/**
 	 * Maximal message retrieval number
 	 */
-	public final static int GET_MAX_MESSAGES = 25;
+	public static final int GET_MAX_MESSAGES = 25;
 	
 	/**
 	 * Default Eclipse Project for storing editable messages
 	 */
-	public final static String DEFAULT_ECLIPSE_PROJECT = "LLRP_CMDR";
+	public static final String DEFAULT_ECLIPSE_PROJECT = "LLRP_CMDR";
 	
 	/**
 	 * Default reader configuration file name
 	 */
-	public final static String DEFAULT_READER_DEF_FILENAME = "readers.xml";
+	public static final String DEFAULT_READER_DEF_FILENAME = "readers.xml";
 	
 	/**
 	 * Pre-built folder, for opened incoming messages
 	 */
-	public final static String REPO_SUBFOLDER = "Temporary";
+	public static final String REPO_SUBFOLDER = "Temporary";
 	
 	/**
 	 * Pre-built folder, for editable outgoing messages
 	 */
-	public final static String DRAFT_SUBFOLDER = "Draft";
+	public static final String DRAFT_SUBFOLDER = "Draft";
 	
 	/**
 	 * Pre-built folder, for messages template (samples)
 	 */
-	public final static String SAMPLE_SUBFOLDER = "Sample";
+	public static final String SAMPLE_SUBFOLDER = "Sample";
 	
 	/** folder storing the configuration files. */
-	public final static String CONFIG_SUBFOLDER = "cfg";
+	public static final String CONFIG_SUBFOLDER = "cfg";
 	
 	/** the name of the configuration file for the reader configuration. */
-	public final static String RDR_CFG_FILE = "rdrCfg.properties";
+	public static final String RDR_CFG_FILE = "rdrCfg.properties";
 	
-	public final static String DB_SUBFOLDER = "db"; 
+	public static final String DB_SUBFOLDER = "db"; 
 	
-	private static final ResourceCenter instance = new ResourceCenter();
+	private static final ResourceCenter INSTANCE = new ResourceCenter();
 	
-	private Repository repo;
+	private static final Logger log = Logger.getLogger(ResourceCenter.class);
 	
-	private static Logger log = Logger.getLogger(ResourceCenter.class);
-	
-	private MessageModel messageModel;
+	private Persistence persistence;
 	
 	private String eclipseProjectName;
 	
@@ -143,16 +141,16 @@ public class ResourceCenter {
 	
 	private ExceptionHandler exceptionHandler;
 	
-	private HashMap<String, String> readerConfigMap;
+	private Map<String, String> readerConfigMap;
 	
-	private HashMap<String, String> readerROSpecMap;
+	private Map<String, String> readerROSpecMap;
 	
 	private ReaderExplorerView readerExplorerView;
 	
 	/**
 	 * Only store meta data, without XML content, to save the memory
 	 */
-	private ArrayList<LLRPMessageItem> messageList;
+	private List<LLRPMessageItem> messageList;
 	
 	/** the worker thread that refreshes the message box periodically. */
 	private MessageBoxRefresh messageBoxRefresh = null;
@@ -180,9 +178,7 @@ public class ResourceCenter {
 		setReaderDefinitionFilename(DEFAULT_READER_DEF_FILENAME);
 		
 		messageList = new ArrayList<LLRPMessageItem>();
-		
-		messageModel = new MessageModel();
-		
+
 		readerConfigMap = new HashMap<String, String>();
 		readerROSpecMap = new HashMap<String, String>();
 	}
@@ -266,7 +262,7 @@ public class ResourceCenter {
 				}
 				
 				try {
-					getRepository().put(item);
+					getPersistence().put(item);
 				} catch (Exception e) {
 					// repository might be null
 					log.error("repository is null", e);
@@ -317,24 +313,12 @@ public class ResourceCenter {
 	 * adapter management to be notified about new RO_ACCESS_REPORTS.
 	 */
 	public void initializeROAccessReportsLogging() {
-		if (roAccessReportsLogginInitialized) return;
-		
-		// get a handle of the repository.
-		ROAccessReportsRepository r = getRepository().getROAccessRepository();
-		if (null != r) {
-			log.debug("initializing RO_ACCESS_REPORTS logging facility.");			
-			AdaptorManagement.getInstance().registerPartialHandler(r, RO_ACCESS_REPORT.class);
+		if (roAccessReportsLogginInitialized) {
+			return;
 		}
+		
+		getPersistence().registerForRoAccessReports();
 		roAccessReportsLogginInitialized = true;
-	}
-	
-	/**
-	 * Get the Message model
-	 * 
-	 * @return Message Model
-	 */
-	public MessageModel getMessageModel() {
-		return messageModel;
 	}
 	
     /**
@@ -342,21 +326,7 @@ public class ResourceCenter {
      *
      */
 	public static ResourceCenter getInstance() {
-		return instance;
-	}
-	
-	/**
-	 * Add LLRP Message Item to Repository and Content Provider.
-	 * 
-	 * @param aNewMessage Incoming LLRP Message
-	 */
-	public void addMessage(LLRPMessageItem aNewMessage) {
-		if (null == aNewMessage) {
-			return;
-		}
-		
-		//Add the Repository
-		repo.put(aNewMessage);
+		return INSTANCE;
 	}
 	
 	/**
@@ -364,7 +334,7 @@ public class ResourceCenter {
 	 * 
 	 * @return Message meta data list 
 	 */
-	public ArrayList<LLRPMessageItem> getMessageMetadataList() {
+	public List<LLRPMessageItem> getMessageMetadataList() {
 		return messageList;
 	}
 	
@@ -396,36 +366,22 @@ public class ResourceCenter {
 	 * @return LLRP XML Content
 	 */
 	public String getMessageContent(String aMsgId) {
-		
-		if (null == aMsgId) {
-			return null;
+		LLRPMessageItem msg = getPersistence().get(aMsgId);
+		if (null == msg) {
+			return StringUtils.EMPTY;
 		}
-		
-		LLRPMessageItem msg = repo.get(aMsgId);
-		
-		return msg.getContent().equals("") ? null : msg.getContent();
+		return StringUtils.EMPTY.equals(msg.getContent()) ? null : msg.getContent();
 	}
-	
+
 	/**
-	 * allows to set a new repository.
-	 * @param repo the new repository.
-	 * @return the old repository.
+	 * gives a handle on the persistence layer. if this one is not initialized, then the layer will
+	 * be prepared and initialized automatically.
+	 * @return the persistence layer or null if not initialized correctly.
 	 */
-	public Repository setRepository(Repository repo) {
-		Repository old = this.repo;
-		this.repo = repo;
-		return old;
-	}
-	
-	/**
-	 * Get the Repository interface.
-	 * 
-	 * @return Repository interface
-	 */
-	public Repository getRepository() {
-		if (repo == null) {
+	public Persistence getPersistence() {
+		if (null == persistence) {
 			
-			log.debug("open/create new repository");
+			log.debug("open/create new persistence layer");
 			IProject project = getEclipseProject();
 			// refresh the workspace...
 			try {
@@ -438,55 +394,44 @@ public class ResourceCenter {
 			IFolder dbFolder = project.getFolder(ResourceCenter.DB_SUBFOLDER);
 			
 			String dbLocation = myWorkspaceRoot.getLocation().toString() + dbFolder.getFullPath().toString() + "/";
+			System.setProperty("org.fosstrak.llrp.commander.persistence.defaultDbLocation", dbLocation);
 			
 			log.info("using db location: " + dbLocation);
 			IPreferenceStore store = LLRPPlugin.getDefault().getPreferenceStore();
 			boolean internalDB = store.getBoolean(PreferenceConstants.P_USE_INTERNAL_DB);
+						
+			// obtain the user name, password and JDBC connector URL from the 
+			// eclipse preference store.
+			PersistenceDescriptor descriptor = new PersistenceDescriptor(
+					store.getBoolean(PreferenceConstants.P_WIPE_DB_ON_STARTUP),
+					store.getBoolean(PreferenceConstants.P_WIPE_RO_ACCESS_REPORTS_ON_STARTUP),
+					store.getBoolean(PreferenceConstants.P_LOG_RO_ACCESS_REPORTS),
+					store.getString(PreferenceConstants.P_EXT_DB_USERNAME),
+					store.getString(PreferenceConstants.P_EXT_DB_PWD),
+					store.getString(PreferenceConstants.P_EXT_DB_JDBC),
+					store.getString(PreferenceConstants.P_EXT_DB_IMPLEMENTOR)
+					);
 			
-			repo = null;
-			boolean wipeRO = store.getBoolean(PreferenceConstants.P_WIPE_RO_ACCESS_REPORTS_ON_STARTUP);
-			boolean wipe = store.getBoolean(PreferenceConstants.P_WIPE_DB_ON_STARTUP);
-			boolean logRO = store.getBoolean(PreferenceConstants.P_LOG_RO_ACCESS_REPORTS);
-			
-			Map<String, String> args = new HashMap<String, String> ();
-			args.put(RepositoryFactory.ARG_WIPE_DB,						String.format("%b", wipe));
-			args.put(RepositoryFactory.ARG_WIPE_RO_ACCESS_REPORTS_DB,	String.format("%b", wipeRO));
-			args.put(RepositoryFactory.ARG_LOG_RO_ACCESS_REPORT, 		String.format("%b", logRO));
-			
-			if (!internalDB) {
-				// obtain the user name, password and JDBC connector URL from the 
-				// eclipse preference store.
-				args.put(RepositoryFactory.ARG_USERNAME,		store.getString(PreferenceConstants.P_EXT_DB_USERNAME));
-				args.put(RepositoryFactory.ARG_PASSWRD,			store.getString(PreferenceConstants.P_EXT_DB_PWD));
-				args.put(RepositoryFactory.ARG_JDBC_STRING,		store.getString(PreferenceConstants.P_EXT_DB_JDBC));
-				args.put(RepositoryFactory.ARG_DB_CLASSNAME,	store.getString(PreferenceConstants.P_EXT_DB_IMPLEMENTOR));
-				
-				try {
-					repo = RepositoryFactory.create(args);
-				} catch (Exception e) {
-					log.error("Could not invoke the repository, using fallback", e);
-					IStatus status = new Status(IStatus.WARNING, LLRPPlugin.PLUGIN_ID, "LLRP Repository Warning.", e);
-					ErrorDialog.openError(LLRPPlugin.getDefault().getWorkbench().getDisplay().getActiveShell(), "Could not open Repository - Using fallback.", e.getMessage(), status);
+			try {
+				// TODO: need to find a nicer way to inject this via osgi? 
+				persistence = new PersistenceImpl();
+				PersistenceException beforeFallbackException = persistence.initialize(internalDB, descriptor);
+				if (null != beforeFallbackException) {
+					// we had an automatic fallback, display the exception.
+					log.error("Could not invoke the repository, using fallback", beforeFallbackException);
+					IStatus status = new Status(IStatus.WARNING, LLRPPlugin.PLUGIN_ID, "LLRP Repository Warning.", beforeFallbackException);
+					ErrorDialog.openError(LLRPPlugin.getDefault().getWorkbench().getDisplay().getActiveShell(), "Could not open Repository - Using fallback.", beforeFallbackException.getMessage(), status);
 				}
+					
+			} catch (LLRPRuntimeException e) {
+				persistence = null;
+				log.error("could not initialize the repository", e);
+				IStatus status = new Status(IStatus.WARNING, LLRPPlugin.PLUGIN_ID, "LLRP Repository Warning.", e);
+				ErrorDialog.openError(LLRPPlugin.getDefault().getWorkbench().getDisplay().getActiveShell(), "Could not open Default/Fallback repository LLRP Commander cannot continue properly!", e.getMessage(), status);				
 			}
 			
-			if (internalDB || (null == repo)) {
-				log.debug("Starting internal Derby database.");
-				args.put(DerbyRepository.ARG_REPO_LOCATION, 	dbLocation);
-				args.put(RepositoryFactory.ARG_USERNAME, 		"");
-				args.put(RepositoryFactory.ARG_PASSWRD, 		"");
-				args.put(RepositoryFactory.ARG_JDBC_STRING, 	"");
-				repo = new DerbyRepository();
-				try {
-					repo.initialize(args);
-				} catch (LLRPRuntimeException e) {
-					log.error("could not initialize the repository", e);
-					IStatus status = new Status(IStatus.WARNING, LLRPPlugin.PLUGIN_ID, "LLRP Repository Warning.", e);
-					ErrorDialog.openError(LLRPPlugin.getDefault().getWorkbench().getDisplay().getActiveShell(), "Could not open Default/Fallback repository LLRP Commander cannot continue properly!", e.getMessage(), status);
-				}
-			}
 		}
-		return repo;
+		return persistence;
 	}
 	
 	/**
@@ -622,8 +567,9 @@ public class ResourceCenter {
 			item.setMessageType(msgName);
 			item.setComment(aComment);
 			
-			this.addMessage(item);
-			
+			// store to the persistence layer.
+			getPersistence().put(item);
+			// deliver via LLRP layer.
 			AdaptorManagement.getInstance().enqueueLLRPMessage(aAdapterName, aReaderName, aMessage);
 						
 		} catch (LLRPRuntimeException e) {
@@ -834,7 +780,7 @@ public class ResourceCenter {
 	 */
 	public void close() {
 		log.info("Closing Database...");
-		ResourceCenter.getInstance().getRepository().close();
+		ResourceCenter.getInstance().getPersistence().close();
 		log.info("Undefine all readers...");
 		ResourceCenter.getInstance().disconnectAllReaders();
 		log.info("stopping message box refresher...");
