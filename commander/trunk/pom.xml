@@ -32,6 +32,8 @@
 	<modules>
 		<module>org.fosstrak.llrp.commander.commons</module>
 		<module>org.fosstrak.llrp.commander.commons.tests</module>
+		<module>org.fosstrak.llrp.commander.llrpaccess</module>
+		<module>org.fosstrak.llrp.commander.llrpaccess.tests</module>
 		<module>org.fosstrak.llrp.commander.persistence</module>
 		<module>org.fosstrak.llrp.commander.persistence.tests</module>
 		<module>org.fosstrak.llrp.commander.plugin</module>

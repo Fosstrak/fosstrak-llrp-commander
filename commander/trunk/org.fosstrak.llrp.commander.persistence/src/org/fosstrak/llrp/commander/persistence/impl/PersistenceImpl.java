@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
 import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.client.LLRPMessageItem;
 import org.fosstrak.llrp.client.ROAccessReportsRepository;
@@ -36,6 +35,7 @@ import org.fosstrak.llrp.client.Repository;
 import org.fosstrak.llrp.client.RepositoryFactory;
 import org.fosstrak.llrp.client.repository.sql.DerbyRepository;
 import org.fosstrak.llrp.client.repository.sql.roaccess.ROAccessItem;
+import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
 import org.fosstrak.llrp.commander.persistence.Persistence;
 import org.fosstrak.llrp.commander.persistence.exception.PersistenceException;
 import org.fosstrak.llrp.commander.persistence.type.PersistenceDescriptor;
@@ -51,6 +51,15 @@ public class PersistenceImpl implements Persistence {
 	private static Logger log = Logger.getLogger(PersistenceImpl.class);
 	
 	private Repository repository;
+	private LLRPAccess llrpAccess;
+	
+	/**
+	 * construct this persistence layer.
+	 * @param llrpAccess the handle onto the LLRP access layer.
+	 */
+	public PersistenceImpl(LLRPAccess llrpAccess) {
+		this.llrpAccess = llrpAccess;
+	}
 
 	@Override
 	public PersistenceException initialize(boolean useFallbackOnly, PersistenceDescriptor desc) throws LLRPRuntimeException {
@@ -99,7 +108,7 @@ public class PersistenceImpl implements Persistence {
 			repository = newRepository;
 			
 			if (null != old.getROAccessRepository()) {
-				AdaptorManagement.getInstance().deregisterPartialHandler(old.getROAccessRepository(), RO_ACCESS_REPORT.class);
+				llrpAccess.deregisterPartialHandler(old.getROAccessRepository(), RO_ACCESS_REPORT.class);
 			}
 			// stop the old repository
 			try {
@@ -261,7 +270,7 @@ public class PersistenceImpl implements Persistence {
 		ROAccessReportsRepository r = repository.getROAccessRepository();
 		if (null != r) {
 			log.debug("initializing RO_ACCESS_REPORTS logging facility.");			
-			AdaptorManagement.getInstance().registerPartialHandler(r, RO_ACCESS_REPORT.class);
+			llrpAccess.registerPartialHandler(r, RO_ACCESS_REPORT.class);
 		}
 	}
 	

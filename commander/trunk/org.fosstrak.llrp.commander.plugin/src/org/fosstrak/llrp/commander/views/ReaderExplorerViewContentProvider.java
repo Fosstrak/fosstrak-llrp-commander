@@ -31,10 +31,9 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.fosstrak.llrp.adaptor.Adaptor;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
-import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.client.Constants;
 import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 
 
 /**
@@ -180,13 +179,13 @@ public class ReaderExplorerViewContentProvider implements
 		
 		log.debug("Retrieving Adaptor Lists from Adapter Management");
 		try {
-			List<String> adaptorList = AdaptorManagement.getInstance().getAdaptorNames();
+			List<String> adaptorList = ResourceCenter.getInstance().getLLRPAccess().getAdaptorNames();
 			Iterator<String> i = adaptorList.iterator();
 			while (i.hasNext()) {
 				String adaptorName = i.next();
 				
 				log.debug("Get Adaptor-" + adaptorName + " ...");
-				Adaptor adaptor = AdaptorManagement.getInstance().getAdaptor(adaptorName);
+				Adaptor adaptor = ResourceCenter.getInstance().getLLRPAccess().getAdapter(adaptorName);
 				
 				List<String> readerList = adaptor.getReaderNames();
 				if (readerList.size() == 0) {
@@ -201,7 +200,7 @@ public class ReaderExplorerViewContentProvider implements
 					}
 				}
 			}
-		} catch (LLRPRuntimeException llrpe) {
+		} catch (LLRPAccessException llrpe) {
 			log.debug("could not initialize the adapter/reader tree", llrpe);
 		} catch (RemoteException re) {
 			log.debug("could not initialize the adapter/reader tree", re);

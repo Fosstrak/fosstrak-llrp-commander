@@ -45,7 +45,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
 import org.fosstrak.llrp.client.MessageHandler;
 import org.fosstrak.llrp.client.repository.sql.roaccess.DerbyROAccessReportsRepository;
 import org.fosstrak.llrp.client.repository.sql.roaccess.ROAccessItem;
@@ -125,11 +124,11 @@ public class ROAccessReportsView extends TableViewPart implements MessageHandler
 			public void run() {
 				if (enabled) {
 					// turn off logging.
-					AdaptorManagement.getInstance().deregisterPartialHandler(
+					ResourceCenter.getInstance().getLLRPAccess().deregisterPartialHandler(
 							h, RO_ACCESS_REPORT.class);
 					enabled = false;
 				} else {
-					AdaptorManagement.getInstance().registerPartialHandler(
+					ResourceCenter.getInstance().getLLRPAccess().registerPartialHandler(
 							h, RO_ACCESS_REPORT.class);
 					enabled = true;
 				}

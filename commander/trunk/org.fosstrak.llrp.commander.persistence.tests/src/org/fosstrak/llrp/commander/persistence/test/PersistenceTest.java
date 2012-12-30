@@ -30,6 +30,7 @@ import org.easymock.EasyMock;
 import org.fosstrak.llrp.client.LLRPMessageItem;
 import org.fosstrak.llrp.client.ROAccessReportsRepository;
 import org.fosstrak.llrp.client.Repository;
+import org.fosstrak.llrp.commander.llrpaccess.impl.LLRPAccessImpl;
 import org.fosstrak.llrp.commander.persistence.Persistence;
 import org.fosstrak.llrp.commander.persistence.impl.PersistenceImpl;
 import org.junit.Test;
@@ -45,6 +46,10 @@ public class PersistenceTest {
 	private static final String READER_NAME = "readerName";
 	private static final String ID = "id";
 	
+	private Persistence newPersistenceImpl() {
+		return new PersistenceImpl(new LLRPAccessImpl());
+	}
+	
 	@Test
 	public void testSupportsRoAccessRepository() {
 		ROAccessReportsRepository roAccessRepo = EasyMock.createMock(ROAccessReportsRepository.class);
@@ -52,7 +57,7 @@ public class PersistenceTest {
 		EasyMock.expect(repository.getROAccessRepository()).andReturn(roAccessRepo);
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 
 		Assert.assertTrue(p.supportsRoAccessRepository());
@@ -65,7 +70,7 @@ public class PersistenceTest {
 		EasyMock.expect(repository.getROAccessRepository()).andReturn(null);
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		Assert.assertFalse(p.supportsRoAccessRepository());
@@ -74,7 +79,7 @@ public class PersistenceTest {
 	
 	@Test
 	public void testSupportsRoAccessRepositoryNoRepo() {
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		Assert.assertFalse(p.supportsRoAccessRepository());
 	}
 
@@ -90,7 +95,7 @@ public class PersistenceTest {
 		EasyMock.expectLastCall();
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		p.put(null);
@@ -100,7 +105,7 @@ public class PersistenceTest {
 	
 	@Test
 	public void testGetByIdNull() {
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		LLRPMessageItem item = p.get(null);
 		Assert.assertNull(item);
 	}
@@ -111,7 +116,7 @@ public class PersistenceTest {
 		EasyMock.expect(repository.get(ID)).andReturn(new LLRPMessageItem());
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		LLRPMessageItem item = p.get(ID);
@@ -125,7 +130,7 @@ public class PersistenceTest {
 		EasyMock.expect(repository.get(ADAPTER_NAME, READER_NAME, 10, true)).andReturn(new ArrayList<LLRPMessageItem> ());
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		List<LLRPMessageItem> items = p.get(ADAPTER_NAME, READER_NAME, 10, true);
@@ -139,7 +144,7 @@ public class PersistenceTest {
 		EasyMock.expect(repository.get(ADAPTER_NAME, READER_NAME, Repository.RETRIEVE_ALL, true)).andReturn(new ArrayList<LLRPMessageItem> ());
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		List<LLRPMessageItem> items = p.get(ADAPTER_NAME, READER_NAME, Persistence.RETRIEVE_ALL, true);
@@ -149,7 +154,7 @@ public class PersistenceTest {
 	
 	@Test
 	public void testIsCleanNoRepo() {
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		Assert.assertFalse(p.isClean());
 	}
 	
@@ -161,7 +166,7 @@ public class PersistenceTest {
 		
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		Assert.assertFalse(p.isClean());
 		
@@ -176,7 +181,7 @@ public class PersistenceTest {
 		
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		Assert.assertEquals(10, p.count(ADAPTER_NAME, READER_NAME));
 		
@@ -190,7 +195,7 @@ public class PersistenceTest {
 		EasyMock.expectLastCall();
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		p.clearAll();
@@ -204,7 +209,7 @@ public class PersistenceTest {
 		EasyMock.expectLastCall();
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		p.clearAdapter(ADAPTER_NAME);
@@ -218,7 +223,7 @@ public class PersistenceTest {
 		EasyMock.expectLastCall();
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		p.clearReader(ADAPTER_NAME, READER_NAME);
@@ -232,7 +237,7 @@ public class PersistenceTest {
 		EasyMock.expectLastCall();
 		EasyMock.replay(repository);
 		
-		Persistence p = new PersistenceImpl();
+		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		
 		p.close();

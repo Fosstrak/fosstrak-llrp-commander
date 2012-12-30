@@ -58,12 +58,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
-import org.fosstrak.llrp.adaptor.config.FileStoreConfiguration;
 import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.client.LLRPExceptionHandlerTypeMap;
 import org.fosstrak.llrp.client.LLRPMessageItem;
 import org.fosstrak.llrp.client.MessageHandler;
+import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
+import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
+import org.fosstrak.llrp.commander.llrpaccess.impl.LLRPAccessImpl;
 import org.fosstrak.llrp.commander.persistence.Persistence;
 import org.fosstrak.llrp.commander.persistence.exception.PersistenceException;
 import org.fosstrak.llrp.commander.persistence.impl.PersistenceImpl;
@@ -165,6 +166,9 @@ public final class ResourceCenter {
 	private Map<String, Image> imageCache = new ConcurrentHashMap<String, Image> ();
 	
 	private TDTEngine tdtEngine = null;
+	
+	// TODO: find a nicer way to inject this one... 
+	private LLRPAccess llrpAccess = new LLRPAccessImpl();
 	
     /**
      * Private Constructor, internally called.
@@ -287,20 +291,13 @@ public final class ResourceCenter {
 			}
 		};
 		
-		AdaptorManagement.getInstance().registerFullHandler(handler);
+		getLLRPAccess().registerFullHandler(handler);
 		IWorkspaceRoot myWorkspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		String readConfig = myWorkspaceRoot.getLocation().toString() + cfg.getFullPath().toString();
 		
-		boolean commitChanges = true;
 		try {
-
-			Map<String, Object> config = new HashMap<String, Object> ();
-			config.put(FileStoreConfiguration.KEY_LOADFILEPATH, readConfig);
-			config.put(FileStoreConfiguration.KEY_STOREFILEPATH, readConfig);
-			String configurationClass = FileStoreConfiguration.class.getCanonicalName();
-			
-			AdaptorManagement.getInstance().initialize(config, config, configurationClass, commitChanges, null, null);
-		} catch (LLRPRuntimeException e) {
+			getLLRPAccess().initialize(readConfig);
+		} catch (LLRPAccessException e) {
 			log.error("could not initialize the adaptor management", e);
 		}
 		
@@ -414,7 +411,7 @@ public final class ResourceCenter {
 			
 			try {
 				// TODO: need to find a nicer way to inject this via osgi? 
-				persistence = new PersistenceImpl();
+				persistence = new PersistenceImpl(getLLRPAccess());
 				PersistenceException beforeFallbackException = persistence.initialize(internalDB, descriptor);
 				if (null != beforeFallbackException) {
 					// we had an automatic fallback, display the exception.
@@ -570,9 +567,9 @@ public final class ResourceCenter {
 			// store to the persistence layer.
 			getPersistence().put(item);
 			// deliver via LLRP layer.
-			AdaptorManagement.getInstance().enqueueLLRPMessage(aAdapterName, aReaderName, aMessage);
+			getLLRPAccess().enqueueLLRPMessage(aAdapterName, aReaderName, aMessage);
 						
-		} catch (LLRPRuntimeException e) {
+		} catch (LLRPAccessException e) {
 			log.debug("could not send file", e);
 		} catch (InvalidLLRPMessageException ive) {
 			log.debug("invalid LLRP message", ive);
@@ -584,8 +581,8 @@ public final class ResourceCenter {
 	 */
 	public void disconnectAllReaders() {
 		log.info("Disconnecting all readers...");
-		AdaptorManagement.getInstance().disconnectReaders();
-		AdaptorManagement.getInstance().shutdown();
+		getLLRPAccess().disconnectReaders();
+		getLLRPAccess().shutdown();
 	}
 
 	/**
@@ -632,7 +629,7 @@ public final class ResourceCenter {
 	
 	public void setExceptionHandler(ExceptionHandler aHandler) {
 		exceptionHandler = aHandler;
-		AdaptorManagement.getInstance().setExceptionHandler(aHandler);
+		getLLRPAccess().setExceptionHandler(aHandler);
 	}
 	
 	public void postExceptionToGUI(LLRPExceptionHandlerTypeMap aExceptionType, String aAdapter, String aReader) {
@@ -825,5 +822,12 @@ public final class ResourceCenter {
 			}
 		}
 		return tdtEngine;
+	}
+
+	/**
+	 * @return a handle onto the LLRP access layer.
+	 */
+	public LLRPAccess getLLRPAccess() {
+		return llrpAccess;
 	}
 }

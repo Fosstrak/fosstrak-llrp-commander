@@ -1,12 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: org.fosstrak.llrp.commander.persistence.tests
-Bundle-SymbolicName: org.fosstrak.llrp.commander.persistence.tests;singleton:=true
+Bundle-Name: org.fosstrak.llrp.commander.llrpaccess.tests
+Bundle-SymbolicName: org.fosstrak.llrp.commander.llrpaccess.tests;singleton:=true
 Bundle-Version: 1.1.1.qualifier
 Require-Bundle: org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1",
  org.fosstrak.llrp.commander.commons;bundle-version="1.1.1",
  org.fosstrak.llrp.commander.llrpaccess;bundle-version="1.1.1",
- org.fosstrak.llrp.commander.persistence;bundle-version="1.1.1",
  org.junit,
  org.easymock;bundle-version="2.4.0"
 Import-Package: org.apache.log4j
