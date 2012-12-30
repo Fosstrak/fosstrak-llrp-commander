@@ -36,8 +36,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
 import org.fosstrak.llrp.adaptor.ReaderMetaData;
+import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 
 /**
  * models a dialog to set the options for the message box view.
@@ -88,18 +89,15 @@ public class ReaderSettingsDialog extends Dialog {
 		logKAMsg.setLayoutData(gridDataKAMsg);
 		
 		try {
-			logKAMsg.setSelection(
-					AdaptorManagement.getInstance().getAdaptor(adaptor).
-						getReader(reader).isReportKeepAlive());
-		} catch (Exception e) {
+			logKAMsg.setSelection(ResourceCenter.getInstance().getLLRPAccess().isReaderReportKeepalive(adaptor, reader));
+		} catch (LLRPAccessException e) {
 			log.debug("could not set the selection", e);
 			logKAMsg.setSelection(false);
 		} 
 		
 
 		try {
-			ReaderMetaData metaData = AdaptorManagement.getInstance().
-				getAdaptor(adaptor).getReader(reader).getMetaData();
+			ReaderMetaData metaData = ResourceCenter.getInstance().getLLRPAccess().getReaderMetaData(adaptor, reader);
 			
 			final Text[] txts = new Text[14];
 			final Label[] lbls = new Label[14];
@@ -226,9 +224,8 @@ public class ReaderSettingsDialog extends Dialog {
 		btnOK.addSelectionListener(new SelectionAdapter() {
 		      public void widgetSelected(SelectionEvent e) {
 	    			try {
-	    				AdaptorManagement.getInstance().getAdaptor(adaptor).
-	    					getReader(reader).setReportKeepAlive(logKAMsg.getSelection());
-	    			} catch (Exception e1) {
+	    				ResourceCenter.getInstance().getLLRPAccess().setReaderReportKeepalive(adaptor, reader, logKAMsg.getSelection());
+	    			} catch (LLRPAccessException e1) {
 	    				log.debug("could not set the keep alive settings", e1);
 	    				logKAMsg.setSelection(false);
 	    			}

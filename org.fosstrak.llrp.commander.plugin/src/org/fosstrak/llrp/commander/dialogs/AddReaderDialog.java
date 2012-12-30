@@ -35,6 +35,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.fosstrak.llrp.adaptor.AdaptorManagement;
+import org.fosstrak.llrp.commander.ResourceCenter;
 
 /**
  * dialog to add a new reader to the reader explorer.
@@ -80,7 +81,7 @@ public class AddReaderDialog extends ConnectDialog {
 		// make sure, we propose a unique reader name
 		String readerName = String.format("ReaderName%d", num++);
 		try {
-			while (AdaptorManagement.getInstance().getAdaptor(
+			while (ResourceCenter.getInstance().getLLRPAccess().getAdapter(
 					AdaptorManagement.DEFAULT_ADAPTOR_NAME).containsReader(
 							readerName)) {
 				
@@ -196,8 +197,8 @@ public class AddReaderDialog extends ConnectDialog {
 						// - name shorter than 3
 						// - name that is already contained
 						if ((txt.getText() == null) || (txt.getText().length() < 3) || 
-								(AdaptorManagement.getInstance().
-										getAdaptor(AdaptorManagement.DEFAULT_ADAPTOR_NAME).
+								(ResourceCenter.getInstance().getLLRPAccess().
+										getAdapter(AdaptorManagement.DEFAULT_ADAPTOR_NAME).
 											containsReader(txt.getText()))) {
 							ok.setEnabled(false);
 							

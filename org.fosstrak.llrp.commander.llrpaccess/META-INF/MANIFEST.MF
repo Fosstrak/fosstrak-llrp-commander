@@ -1,28 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: org.fosstrak.llrp.commander.plugin
-Bundle-SymbolicName: org.fosstrak.llrp.commander.plugin;singleton:=true
+Bundle-Name: org.fosstrak.llrp.commander.llrpaccess
+Bundle-SymbolicName: org.fosstrak.llrp.commander.llrpaccess;singleton:=true
 Bundle-Version: 1.1.1.qualifier
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.jface.text,
- org.eclipse.ui.editors,
- org.eclipse.core.resources,
- org.eclipse.ui.forms,
- org.eclipse.ui.ide,
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
  org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1",
- org.fosstrak.llrp.commander.commons;bundle-version="1.1.1",
- org.fosstrak.llrp.commander.llrpaccess;bundle-version="1.1.1",
- org.fosstrak.llrp.commander.persistence;bundle-version="1.1.1",
- org.apache.commons.lang;bundle-version="2.6.0"
-Import-Package: org.apache.log4j,
- org.jdom,
- org.jdom.input
-Bundle-Activator: org.fosstrak.llrp.commander.LLRPPlugin
+ org.fosstrak.llrp.commander.commons;bundle-version="1.1.1"
+Import-Package: org.apache.log4j
 Bundle-Vendor: ETH Zurich
-Export-Package: org.fosstrak.llrp.commander.util
-Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: org.fosstrak.llrp.commander.llrpaccess,
+ org.fosstrak.llrp.commander.llrpaccess.exception,
+ org.fosstrak.llrp.commander.llrpaccess.impl,
+ org.fosstrak.llrp.commander.llrpaccess.type
 Bundle-ClassPath: .,
  commons-beanutils-1.7.0.jar,
  commons-beanutils-core-1.7.0.jar,

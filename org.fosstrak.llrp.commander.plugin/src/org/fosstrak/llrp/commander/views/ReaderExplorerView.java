@@ -58,6 +58,8 @@ import org.fosstrak.llrp.commander.ResourceCenter;
 import org.fosstrak.llrp.commander.dialogs.AddFCDialog;
 import org.fosstrak.llrp.commander.dialogs.AddReaderDialog;
 import org.fosstrak.llrp.commander.dialogs.ReaderSettingsDialog;
+import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
+import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 import org.fosstrak.llrp.commander.type.MessageConstants;
 import org.fosstrak.llrp.commander.util.LLRPConstraints;
 import org.fosstrak.llrp.commander.util.LLRPFactory;
@@ -145,11 +147,14 @@ public class ReaderExplorerView extends ViewPart {
 
 	private Action actionReaderSettings;
 
+	private LLRPAccess llrpAccess;
+	
 	/**
 	 * Default Constructor.
 	 */
 	public ReaderExplorerView() {
 		isFocusOnReaderTreeObject = false;
+		llrpAccess = ResourceCenter.getInstance().getLLRPAccess();
 	}
 
 	/**
@@ -319,10 +324,9 @@ public class ReaderExplorerView extends ViewPart {
 					actionAddAdapter.setEnabled(false);
 					actionAddReader.setEnabled(false);
 
-					// check whether the requested adaptor is registered in the
-					// mgmt
-					if (AdaptorManagement.getInstance().containsAdaptor(adaptorName)) {
-						Adaptor adaptor = (Adaptor) AdaptorManagement.getInstance().getAdaptor(adaptorName);
+					// check whether the requested adaptor is registered in the mgmt
+					if (llrpAccess.containsAdapter(adaptorName)) {
+						Adaptor adaptor = llrpAccess.getAdapter(adaptorName);
 
 						// default adaptor cannot be deleted therefore showing
 						// the
@@ -335,8 +339,7 @@ public class ReaderExplorerView extends ViewPart {
 							actionRemoveAdaptor.setEnabled(true);
 
 							// if the adapter is local, we allow to add readers
-							if (AdaptorManagement.getInstance().isLocalAdapter(
-									adaptor.getAdaptorName())) {
+							if (llrpAccess.isLocalAdapter(adaptor.getAdaptorName())) {
 								actionAddReader.setEnabled(true);
 							}
 						} else {
@@ -370,8 +373,7 @@ public class ReaderExplorerView extends ViewPart {
 			public void run() {
 
 				// Open the Dialog
-				AddFCDialog dlg = new AddFCDialog(viewer.getControl()
-						.getShell());
+				AddFCDialog dlg = new AddFCDialog(viewer.getControl().getShell());
 				if (dlg.open() == Window.CANCEL) {
 					return;
 				}
@@ -380,20 +382,16 @@ public class ReaderExplorerView extends ViewPart {
 				try {
 					// Define the Adapter in Adapter Management module.
 					if (dlg.isLocalAdapter()) {
-						AdaptorManagement.getInstance().define(dlg.getName(), null);
+						llrpAccess.defineAdapter(dlg.getName(), null);
 					} else {
-						AdaptorManagement.getInstance().define(dlg.getName(), dlg.getIP());
+						llrpAccess.defineAdapter(dlg.getName(), dlg.getIP());
 					}
-				} catch (LLRPRuntimeException llrpe) {
-					log.info(llrpe.getMessage());
-					message = llrpe.getMessage();
-				} catch (RemoteException re) {
-					log.info(re.getMessage());
-					message = re.getMessage();
+				} catch (LLRPAccessException e) {
+					log.info("could not define the new adapter", e);
+					message = e.getMessage();
 				}
 				if (null != message) {
-					MessageDialog.openWarning(viewer.getControl().getShell(),
-							"Could not create Adapter", message);
+					MessageDialog.openWarning(viewer.getControl().getShell(), "Could not create Adapter", message);
 				}
 
 				refresh();
@@ -420,10 +418,10 @@ public class ReaderExplorerView extends ViewPart {
 					// Define the Adapter in Adapter Management module.
 					String adapterName = getSelectedAdapter();
 					Adaptor adapter = null;
-					if (AdaptorManagement.getInstance().containsAdaptor(adapterName)) {
-						adapter = AdaptorManagement.getInstance().getAdaptor(adapterName);
+					if (llrpAccess.containsAdapter(adapterName)) {
+						adapter = llrpAccess.getAdapter(adapterName);
 					} else {
-						adapter = AdaptorManagement.getInstance().getDefaultAdaptor();
+						adapter = llrpAccess.getDefaultAdaptor();
 					}
 					
 					adapter.define(dlg.getName(), dlg.getIP(), dlg
@@ -434,6 +432,9 @@ public class ReaderExplorerView extends ViewPart {
 					log.info(llrpe.getMessage());
 					message = llrpe.getMessage();
 				} catch (RemoteException re) {
+					log.info(re.getMessage());
+					message = re.getMessage();
+				} catch (LLRPAccessException re) {
 					log.info(re.getMessage());
 					message = re.getMessage();
 				}
@@ -460,19 +461,18 @@ public class ReaderExplorerView extends ViewPart {
 
 					try {
 						Adaptor adapter = null;
-						if (AdaptorManagement.getInstance().containsAdaptor(
-								getSelectedAdapter())) {
-							adapter = AdaptorManagement.getInstance().
-								getAdaptor(getSelectedAdapter());
+						if (llrpAccess.containsAdapter(getSelectedAdapter())) {
+							adapter = llrpAccess.getAdapter(getSelectedAdapter());
 						} else {
-							adapter = AdaptorManagement.getInstance().
-								getDefaultAdaptor();
+							adapter = llrpAccess.getDefaultAdaptor();
 						}
 						adapter.undefine(currentSelectedReader.getName());
 					} catch (LLRPRuntimeException llrpe) {
 						log.error("could not undefine the reader", llrpe);
 					} catch (RemoteException re) {
 						log.error("remote exception while undefining the reader", re);
+					} catch (LLRPAccessException e) {
+						log.error("could not undefine the reader", e);
 					}
 
 					log.debug("Refreshing the Reader Tree...");
@@ -512,12 +512,14 @@ public class ReaderExplorerView extends ViewPart {
 					ReaderTreeObject adapterNode = currentSelectedReader.getParent();
 
 					try {
-						Adaptor adaptor = AdaptorManagement.getInstance().getAdaptor(adapterNode.getName());
+						Adaptor adaptor = llrpAccess.getAdapter(adapterNode.getName());
 						adaptor.getReader(currentSelectedReader.getName()).connect(true);
 					} catch (LLRPRuntimeException llrpe) {
 						log.debug("LLRP Runtime Exception while connecting reader", llrpe);
 					} catch (RemoteException re) {
 						log.debug("remote exception while trying to connect reader", re);
+					} catch (LLRPAccessException e) {
+						log.debug("remote exception while trying to connect reader", e);
 					}
 				}
 
@@ -544,17 +546,14 @@ public class ReaderExplorerView extends ViewPart {
 							.getParent();
 
 					try {
-						Adaptor adaptor = AdaptorManagement.getInstance()
-								.getAdaptor(adapterNode.getName());
+						Adaptor adaptor = llrpAccess.getAdapter(adapterNode.getName());
 						log.debug("Geting adapter " + adaptor.getAdaptorName());
-						adaptor.getReader(currentSelectedReader.getName())
-								.disconnect();
-						log.debug("Disconnecting from Adapter "
-								+ currentSelectedReader.getName());
-					} catch (LLRPRuntimeException llrpe) {
+						adaptor.getReader(currentSelectedReader.getName()).disconnect();
+						log.debug("Disconnecting from Adapter " + currentSelectedReader.getName());
+					} catch (LLRPAccessException llrpe) {
 						log.debug("Exception while trying to disconnect reader", llrpe);
-					} catch (RemoteException re) {
-						log.debug("caught remote exception while disconnecting reader", re);
+					} catch (RemoteException e) {
+						log.debug("Exception while trying to disconnect reader", e);
 					}
 				}
 				viewer.refresh(true);
@@ -609,16 +608,14 @@ public class ReaderExplorerView extends ViewPart {
 
 						// only call delete method if adaptor is present in the
 						// mgmt
-						if (AdaptorManagement.getInstance().containsAdaptor(
-								adaptorName)) {
-							Adaptor adaptor = (Adaptor) AdaptorManagement
-									.getInstance().getAdaptor(adaptorName);
+						if (llrpAccess.containsAdapter(adaptorName)) {
+							Adaptor adaptor = llrpAccess.getAdapter(adaptorName);
 
 							// default adaptor cannot be deleted.
 							if (!adaptor.getAdaptorName().equalsIgnoreCase(AdaptorManagement.DEFAULT_ADAPTOR_NAME)) {
 
 								// delete the adaptor
-								AdaptorManagement.getInstance().undefine(adaptorName);
+								llrpAccess.undefineAdapter(adaptorName);
 							}
 						}
 
@@ -829,16 +826,11 @@ public class ReaderExplorerView extends ViewPart {
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event) {
 				try {
-					String adapterName = currentSelectedReader.getParent()
-							.getName();
+					String adapterName = currentSelectedReader.getParent().getName();
 					String readerName = currentSelectedReader.getName();
-					if (AdaptorManagement.getInstance().containsAdaptor(
-							adapterName)
-							&& AdaptorManagement.getInstance().getAdaptor(
-									adapterName).containsReader(readerName)) {
+					if (llrpAccess.containsAdapter(adapterName) && llrpAccess.getAdapter(adapterName).containsReader(readerName)) {
 
-						Reader reader = AdaptorManagement.getInstance()
-								.getAdaptor(adapterName).getReader(readerName);
+						Reader reader = llrpAccess.getAdapter(adapterName).getReader(readerName);
 
 						if (reader.isConnected()) {
 							log.debug("reader connected - disconnecting.");

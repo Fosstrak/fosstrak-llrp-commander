@@ -52,9 +52,8 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.fosstrak.llrp.adaptor.Adaptor;
-import org.fosstrak.llrp.adaptor.AdaptorManagement;
-import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 import org.llrp.ltk.types.LLRPMessage;
 
 /**
@@ -159,9 +158,9 @@ public class SendMessageDialog extends org.eclipse.jface.dialogs.Dialog {
 		columnReader.setText ("Reader");
 
 		try {
-			Iterator<String> i = AdaptorManagement.getInstance().getAdaptorNames().iterator();
+			Iterator<String> i = ResourceCenter.getInstance().getLLRPAccess().getAdaptorNames().iterator();
 			while (i.hasNext()) {
-				Adaptor adaptor = AdaptorManagement.getInstance().getAdaptor(i.next());
+				Adaptor adaptor = ResourceCenter.getInstance().getLLRPAccess().getAdapter(i.next());
 
 				Iterator<String> j = adaptor.getReaderNames().iterator();
 				while (j.hasNext()) {
@@ -175,7 +174,7 @@ public class SendMessageDialog extends org.eclipse.jface.dialogs.Dialog {
 					}
 				}
 			}
-		} catch (LLRPRuntimeException llrpe) {
+		} catch (LLRPAccessException llrpe) {
 			log.debug("issue while reading the names for reader and adaptors", llrpe);
 		} catch (RemoteException re) {
 			log.debug("issue while reading the names for reader and adaptors", re);

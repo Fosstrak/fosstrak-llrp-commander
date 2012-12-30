@@ -24,7 +24,6 @@ package org.fosstrak.llrp.commander.check;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
@@ -33,7 +32,10 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.fosstrak.llrp.commander.LLRPPlugin;
 import org.fosstrak.llrp.commander.ResourceCenter;
 
