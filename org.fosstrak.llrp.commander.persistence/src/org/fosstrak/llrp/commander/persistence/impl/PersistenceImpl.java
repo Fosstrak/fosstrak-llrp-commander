@@ -39,6 +39,7 @@ import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
 import org.fosstrak.llrp.commander.persistence.Persistence;
 import org.fosstrak.llrp.commander.persistence.exception.PersistenceException;
 import org.fosstrak.llrp.commander.persistence.type.PersistenceDescriptor;
+import org.fosstrak.llrp.commander.persistence.type.RepositoryFactoryDelegate;
 import org.llrp.ltk.generated.messages.RO_ACCESS_REPORT;
 
 /**
@@ -48,10 +49,11 @@ import org.llrp.ltk.generated.messages.RO_ACCESS_REPORT;
  */
 public class PersistenceImpl implements Persistence {
 
-	private static Logger LOG = Logger.getLogger(PersistenceImpl.class);
+	private static final Logger LOG = Logger.getLogger(PersistenceImpl.class);
 	
 	private Repository repository;
 	private LLRPAccess llrpAccess;
+	private RepositoryFactoryDelegate repositoryFactory;
 	
 	/**
 	 * construct this persistence layer.
@@ -63,6 +65,11 @@ public class PersistenceImpl implements Persistence {
 
 	@Override
 	public PersistenceException initialize(boolean useFallbackOnly, PersistenceDescriptor desc) throws LLRPRuntimeException {
+		try {
+			assertDescriptorNotNull(desc);
+		} catch (PersistenceException e1) {
+			throw new LLRPRuntimeException(e1);
+		}
 		
 		Map<String, String> args = map(desc);
 		PersistenceException initialException = null;
@@ -70,10 +77,10 @@ public class PersistenceImpl implements Persistence {
 		
 		if (!useFallbackOnly) {
 			try {
-				repository = RepositoryFactory.create(args);
-			} catch (Exception e) {
+				repository = repositoryFactory.create(args);
+			} catch (PersistenceException e) {
 				LOG.error("Could not invoke the repository, using fallback", e);
-				initialException = new PersistenceException(e);
+				initialException = e;
 			}
 		}
 		
@@ -94,54 +101,51 @@ public class PersistenceImpl implements Persistence {
 		
 		return initialException;
 	}
-	
+
 	@Override
 	public boolean change(PersistenceDescriptor desc) throws PersistenceException {
+		assertDescriptorNotNull(desc);
 		if (!verifyOldRepoNotSame(desc)) {
 			return false;
 		}
 		
 		// try to open the repository. if it works out, switch it.
+		Repository newRepository = repositoryFactory.create(map(desc));
+		Repository old = repository;
+		repository = newRepository;
+		
+		if (null != old.getROAccessRepository()) {
+			llrpAccess.deregisterPartialHandler(old.getROAccessRepository(), RO_ACCESS_REPORT.class);
+		}
+		// stop the old repository
 		try {
-			Repository newRepository = RepositoryFactory.create(map(desc));
-			Repository old = repository;
-			repository = newRepository;
-			
-			if (null != old.getROAccessRepository()) {
-				llrpAccess.deregisterPartialHandler(old.getROAccessRepository(), RO_ACCESS_REPORT.class);
-			}
-			// stop the old repository
-			try {
-				old.close();
-			} catch (Exception repoE) {
-				LOG.error("Old repository could not be stopped.", repoE);
-			}
-		} catch (Exception ex) {
-			LOG.debug("could not initialize the persistence container.", ex);
-			throw new PersistenceException(ex);
+			old.close();
+		} catch (Exception repoE) {
+			LOG.error("Old repository could not be stopped.", repoE);
 		}
 		return true;
     }
 
 	@Override
 	public boolean test(PersistenceDescriptor desc) throws PersistenceException {
+		assertDescriptorNotNull(desc);
 		if (!verifyOldRepoNotSame(desc)) {
 			return false;
 		}
 		
-		try {
-			Repository testRepository = RepositoryFactory.create(map(desc));
-			testRepository.close();
-	
-		} catch (Exception ex) {
-			LOG.debug("could not initialize the persistence container.", ex);
-			throw new PersistenceException(ex);
-		}
+		Repository testRepository = repositoryFactory.create(map(desc));
+		testRepository.close();
 		return true;
 	}
 	
+	private void assertDescriptorNotNull(PersistenceDescriptor desc) throws PersistenceException {
+		if (null == desc) {
+			throw new PersistenceException("descriptor must not be null");
+		}
+	}
+	
 	private boolean verifyOldRepoNotSame(PersistenceDescriptor desc) {
-		if ((null == repository) || (repository.getClass().getName().equals(desc.getImplementingClass()))) {
+		if ((null != repository) && (repository.getClass().getName().equals(desc.getImplementingClass()))) {
 			LOG.info("instantiate twice the same repository is not allowed.");
 			return false;
 		}
@@ -280,5 +284,13 @@ public class PersistenceImpl implements Persistence {
 	 */
 	public void setRepository(Repository repository) {
 		this.repository = repository;
+	}
+	
+	/**
+	 * allows to inject a repository factory delegate.
+	 * @param repositoryFactory the new delegate to use.
+	 */
+	public void setRepositoryFactory(RepositoryFactoryDelegate repositoryFactory) {
+		this.repositoryFactory = repositoryFactory;
 	}
 }

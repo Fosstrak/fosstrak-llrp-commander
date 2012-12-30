@@ -37,7 +37,7 @@ import org.fosstrak.llrp.commander.persistence.type.PersistenceDescriptor;
 public interface Persistence {
 
 	/** flag to set the retrieval of messages to all messages in the persistence. */
-	final int RETRIEVE_ALL = -1;
+	int RETRIEVE_ALL = -1;
 	
 	/**
 	 * initialize the persistence layer. if the given container cannot be used for 
