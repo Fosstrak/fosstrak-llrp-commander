@@ -48,7 +48,7 @@ import org.llrp.ltk.generated.messages.RO_ACCESS_REPORT;
  */
 public class PersistenceImpl implements Persistence {
 
-	private static Logger log = Logger.getLogger(PersistenceImpl.class);
+	private static Logger LOG = Logger.getLogger(PersistenceImpl.class);
 	
 	private Repository repository;
 	private LLRPAccess llrpAccess;
@@ -72,13 +72,13 @@ public class PersistenceImpl implements Persistence {
 			try {
 				repository = RepositoryFactory.create(args);
 			} catch (Exception e) {
-				log.error("Could not invoke the repository, using fallback", e);
+				LOG.error("Could not invoke the repository, using fallback", e);
 				initialException = new PersistenceException(e);
 			}
 		}
 		
 		if (useFallbackOnly || (null == repository)) {
-			log.debug("Starting internal Derby database.");
+			LOG.debug("Starting internal Derby database.");
 			args.put(DerbyRepository.ARG_REPO_LOCATION, 	dbLocation);
 			args.put(RepositoryFactory.ARG_USERNAME, 		StringUtils.EMPTY);
 			args.put(RepositoryFactory.ARG_PASSWRD, 		StringUtils.EMPTY);
@@ -114,10 +114,10 @@ public class PersistenceImpl implements Persistence {
 			try {
 				old.close();
 			} catch (Exception repoE) {
-				log.error("Old repository could not be stopped.", repoE);
+				LOG.error("Old repository could not be stopped.", repoE);
 			}
 		} catch (Exception ex) {
-			log.debug("could not initialize the persistence container.", ex);
+			LOG.debug("could not initialize the persistence container.", ex);
 			throw new PersistenceException(ex);
 		}
 		return true;
@@ -134,7 +134,7 @@ public class PersistenceImpl implements Persistence {
 			testRepository.close();
 	
 		} catch (Exception ex) {
-			log.debug("could not initialize the persistence container.", ex);
+			LOG.debug("could not initialize the persistence container.", ex);
 			throw new PersistenceException(ex);
 		}
 		return true;
@@ -142,7 +142,7 @@ public class PersistenceImpl implements Persistence {
 	
 	private boolean verifyOldRepoNotSame(PersistenceDescriptor desc) {
 		if ((null == repository) || (repository.getClass().getName().equals(desc.getImplementingClass()))) {
-			log.info("instantiate twice the same repository is not allowed.");
+			LOG.info("instantiate twice the same repository is not allowed.");
 			return false;
 		}
 		return true;
@@ -170,19 +170,19 @@ public class PersistenceImpl implements Persistence {
 	@Override
 	public void put(LLRPMessageItem message) {
 		if (null == message) {
-			log.trace("not adding null message to the repository.");
+			LOG.trace("not adding null message to the repository.");
 			return;
 		}
 		
 		//Add the Repository
-		log.trace("adding message to the repository." + message);
+		LOG.trace("adding message to the repository." + message);
 		repository.put(message);
 	}
 
 	@Override
 	public LLRPMessageItem get(String id) {		
 		if (null == id) {
-			log.trace("id is null - returning null.");
+			LOG.trace("id is null - returning null.");
 			return null;
 		}
 
@@ -210,7 +210,7 @@ public class PersistenceImpl implements Persistence {
 		try {
 			return rorepo.getAll();
 		} catch (Exception e) {
-			log.error("could not load ro access reports messages from db", e);
+			LOG.error("could not load ro access reports messages from db", e);
 			return Collections.emptyList();
 		}
 	}
@@ -255,7 +255,7 @@ public class PersistenceImpl implements Persistence {
 		try {
 			rorepo.clear();
 		} catch (Exception e) {
-			log.error("could not clear ro access reports db", e);
+			LOG.error("could not clear ro access reports db", e);
 		}
 	}
 
@@ -269,7 +269,7 @@ public class PersistenceImpl implements Persistence {
 		// get a handle of the repository.
 		ROAccessReportsRepository r = repository.getROAccessRepository();
 		if (null != r) {
-			log.debug("initializing RO_ACCESS_REPORTS logging facility.");			
+			LOG.debug("initializing RO_ACCESS_REPORTS logging facility.");			
 			llrpAccess.registerPartialHandler(r, RO_ACCESS_REPORT.class);
 		}
 	}

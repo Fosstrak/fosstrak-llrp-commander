@@ -49,15 +49,17 @@ public class LLRPAccessImpl implements LLRPAccess {
 	
 	private AdaptorManagementDelegate delegate = new AdaptorManagementDelegate();
 
+	private static final String CAUGHT_EXCEPTION = "caught exception";
+	
 	/** the logger. */
-	private static final Logger log = Logger.getLogger(LLRPAccessImpl.class);
+	private static final Logger LOG = Logger.getLogger(LLRPAccessImpl.class);
 
 	@Override
 	public Reader getReader(String adapterName, String readerName) throws LLRPAccessException {
 		try {
 			return getMgmt().getAdaptor(adapterName).getReader(readerName);
 		} catch (Exception e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -67,7 +69,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getReader(adapterName, readerName).getMetaData();
 		} catch (RemoteException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -77,7 +79,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			getReader(adapterName, readerName).setReportKeepAlive(keepAlive);
 		} catch (RemoteException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -87,7 +89,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getReader(adapterName, readerName).isReportKeepAlive();
 		} catch (RemoteException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -97,7 +99,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getMgmt().containsAdaptor(adaptorName);
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -107,7 +109,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getMgmt().define(adaptorNamePreferred, address);
 		} catch (Exception e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -117,7 +119,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			getMgmt().undefine(adapterName);
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -127,7 +129,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getMgmt().getAdaptor(adaptorName);
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -137,7 +139,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getMgmt().getAdaptorNames();
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -147,7 +149,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getMgmt().getDefaultAdaptor();
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -157,7 +159,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			return getMgmt().isLocalAdapter(adapterName);
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -177,7 +179,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			getMgmt().enqueueLLRPMessage(adapterName, readerName, message);
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
@@ -215,7 +217,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 		try {
 			getMgmt().initialize(config, config, configurationClass, commitChanges, null, null);
 		} catch (LLRPRuntimeException e) {
-			log.debug("caught exception", e);
+			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
 	}
