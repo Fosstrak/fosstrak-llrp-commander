@@ -30,18 +30,19 @@ public class PersistenceException extends Exception {
 
 	private static final long serialVersionUID = -8734938260142941390L;
 
-	public PersistenceException() {
-		super();
-	}
-
-	public PersistenceException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+	/**
+	 * new persistence exception.
+	 * @param message exception cause.
+	 */
 	public PersistenceException(String message) {
 		super(message);
 	}
 
+
+	/**
+	 * new persistence exception wrapping the old exception.
+	 * @param cause the causing exception
+	 */
 	public PersistenceException(Throwable cause) {
 		super(cause);
 	}

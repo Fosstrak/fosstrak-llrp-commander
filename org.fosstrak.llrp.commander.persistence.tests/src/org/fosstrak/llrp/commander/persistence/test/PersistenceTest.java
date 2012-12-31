@@ -71,9 +71,9 @@ public class PersistenceTest {
 		((PersistenceImpl)p).setRepositoryFactory(creator);
 		try {
 			p.test(null);
-		} catch (PersistenceException exe) {
+		} catch (Exception exe) {
 			Assert.assertEquals(0, creator.getHits());
-			throw exe;
+			throw new PersistenceException(exe);
 		}
 	}
 	
