@@ -49,6 +49,8 @@ import org.llrp.ltk.generated.messages.RO_ACCESS_REPORT;
  */
 public class PersistenceImpl implements Persistence {
 
+	public static final String DB_STORE_LOCATION = "org.fosstrak.llrp.commander.persistence.defaultDbLocation";
+	
 	private static final Logger LOG = Logger.getLogger(PersistenceImpl.class);
 	
 	private Repository repository;
@@ -73,7 +75,7 @@ public class PersistenceImpl implements Persistence {
 		
 		Map<String, String> args = map(desc);
 		PersistenceException initialException = null;
-		final String dbLocation = System.getProperty("org.fosstrak.llrp.commander.persistence.defaultDbLocation");
+		final String dbLocation = System.getProperty(DB_STORE_LOCATION);
 		
 		if (!useFallbackOnly) {
 			try {
@@ -81,6 +83,8 @@ public class PersistenceImpl implements Persistence {
 			} catch (PersistenceException e) {
 				LOG.error("Could not invoke the repository, using fallback", e);
 				initialException = e;
+				// just to be sure
+				repository = null;
 			}
 		}
 		
@@ -114,14 +118,16 @@ public class PersistenceImpl implements Persistence {
 		Repository old = repository;
 		repository = newRepository;
 		
-		if (null != old.getROAccessRepository()) {
-			llrpAccess.deregisterPartialHandler(old.getROAccessRepository(), RO_ACCESS_REPORT.class);
-		}
-		// stop the old repository
-		try {
-			old.close();
-		} catch (Exception repoE) {
-			LOG.error("Old repository could not be stopped.", repoE);
+		if (null != old) {
+			if (null != old.getROAccessRepository()) {
+				llrpAccess.deregisterPartialHandler(old.getROAccessRepository(), RO_ACCESS_REPORT.class);
+			}
+			// stop the old repository
+			try {
+				old.close();
+			} catch (Exception repoE) {
+				LOG.error("Old repository could not be stopped.", repoE);
+			}
 		}
 		return true;
     }

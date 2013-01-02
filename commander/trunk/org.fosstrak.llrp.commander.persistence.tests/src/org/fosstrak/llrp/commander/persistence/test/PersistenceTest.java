@@ -21,6 +21,8 @@
 
 package org.fosstrak.llrp.commander.persistence.test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.easymock.EasyMock;
+import org.eclipse.equinox.internal.p2.core.helpers.FileUtils;
 import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.client.LLRPMessageItem;
 import org.fosstrak.llrp.client.ROAccessReportsRepository;
@@ -57,6 +60,108 @@ public class PersistenceTest {
 	
 	private Persistence newPersistenceImpl() {
 		return new PersistenceImpl(new LLRPAccessImpl());
+	}
+	
+	@Test(expected = LLRPRuntimeException.class)
+	public void testInitializeNonNullInput() throws LLRPRuntimeException {
+		Persistence p = newPersistenceImpl();
+		p.initialize(true, null);
+	}
+	
+	@Test
+	public void testInitializeUseFallbackOnly() throws LLRPRuntimeException, IOException {
+		String tempFolder = System.getProperty("java.io.tmpdir") + "testRepository"+ System.currentTimeMillis();
+		File folder = new File(tempFolder);
+		folder.mkdir();
+		System.setProperty(PersistenceImpl.DB_STORE_LOCATION, folder.getAbsolutePath());
+
+		Persistence p = newPersistenceImpl();
+		PersistenceException ex = p.initialize(true, PersistenceDescriptor.dummy());
+		Assert.assertNull(ex);
+		Assert.assertTrue(p.isClean());
+		p.close();
+		
+		// delete the repository
+		FileUtils.deleteEmptyDirs(new File(tempFolder));
+	}
+	
+	@Test
+	public void testInitializeWithFallback() throws LLRPRuntimeException, IOException {
+		String tempFolder = System.getProperty("java.io.tmpdir") + "testRepository"+ System.currentTimeMillis();
+		File folder = new File(tempFolder);
+		folder.mkdir();
+		System.setProperty(PersistenceImpl.DB_STORE_LOCATION, folder.getAbsolutePath());
+
+		Persistence p = newPersistenceImpl();
+		((PersistenceImpl)p).setRepositoryFactory(new CreatorMockException());
+		PersistenceException ex = p.initialize(false, PersistenceDescriptor.dummy());
+		Assert.assertNotNull(ex);
+		Assert.assertTrue(p.isClean());
+		p.close();
+		
+		// delete the repository
+		FileUtils.deleteEmptyDirs(new File(tempFolder));
+	}
+	
+	@Test
+	public void testInitializeCorrectly() throws LLRPRuntimeException {
+		final Repository repository = EasyMock.createMock(Repository.class);
+		EasyMock.expect(repository.isHealth()).andReturn(true);
+		EasyMock.expectLastCall();
+		EasyMock.replay(repository);
+		
+		Persistence p = newPersistenceImpl();
+		((PersistenceImpl)p).setRepositoryFactory(new CreatorMock(repository));
+		PersistenceException ex = p.initialize(false, PersistenceDescriptor.dummy());
+		Assert.assertNull(ex);
+		
+		// issue this test in order to verify that not the fallback database is used.
+		Assert.assertTrue(p.isClean());
+		
+		EasyMock.verify(repository);
+	}
+	
+	@Test(expected = PersistenceException.class)
+	public void testChangeNonNullInput() throws PersistenceException {
+		Persistence p = newPersistenceImpl();
+		p.change(null);
+	}
+	
+	@Test
+	public void testChange() throws PersistenceException {
+		final LLRPAccess llrpAccess = EasyMock.createMock(LLRPAccess.class);
+		llrpAccess.deregisterPartialHandler(EasyMock.isA(ROAccessReportsRepository.class), EasyMock.isA(Class.class));
+		EasyMock.expectLastCall();
+		
+		final ROAccessReportsRepository roAccess = EasyMock.createMock(ROAccessReportsRepository.class);
+		final Repository repository = EasyMock.createMock(Repository.class);
+		EasyMock.expect(repository.getROAccessRepository()).andReturn(roAccess).atLeastOnce();
+		repository.close();
+		EasyMock.expectLastCall();
+		
+		final Repository repository2 = EasyMock.createMock(Repository.class);
+		EasyMock.expect(repository2.isHealth()).andReturn(true);
+		
+		EasyMock.replay(repository);
+		EasyMock.replay(repository2);
+		EasyMock.replay(roAccess);
+		EasyMock.replay(llrpAccess);
+		
+		Persistence p = new PersistenceImpl(llrpAccess);
+		((PersistenceImpl)p).setRepositoryFactory(new CreatorMock(repository));
+		boolean res = p.change(PersistenceDescriptor.dummy());
+		Assert.assertTrue(res);
+		
+		((PersistenceImpl)p).setRepositoryFactory(new CreatorMock(repository2));
+		res = p.change(PersistenceDescriptor.dummy());
+		Assert.assertTrue(res);
+		// assert that the new repository is answering.
+		Assert.assertTrue(p.isClean());
+		
+		EasyMock.verify(repository);
+		EasyMock.verify(repository2);
+		EasyMock.verify(roAccess);
+		EasyMock.verify(llrpAccess);
 	}
 	
 	/**
@@ -112,12 +217,25 @@ public class PersistenceTest {
 	 * @throws PersistenceException
 	 */
 	@Test
-	public void testVerifyOldRepoNotSameButRequestSame() throws PersistenceException {
+	public void testVerifyOldRepoNotSameButRequestSameCalledThroughTest() throws PersistenceException {
 		Repository repository = EasyMock.createMock(Repository.class);
 		PersistenceDescriptor desc = new PersistenceDescriptor(true, true, true, "", "", "", repository.getClass().getName());
 		Persistence p = newPersistenceImpl();
 		((PersistenceImpl)p).setRepository(repository);
 		Assert.assertFalse(p.test(desc));		
+	}
+	
+	/**
+	 * test must fail during invocation of the repository.
+	 * @throws PersistenceException
+	 */
+	@Test
+	public void testVerifyOldRepoNotSameButRequestSameCalledThroughChange() throws PersistenceException {
+		Repository repository = EasyMock.createMock(Repository.class);
+		PersistenceDescriptor desc = new PersistenceDescriptor(true, true, true, "", "", "", repository.getClass().getName());
+		Persistence p = newPersistenceImpl();
+		((PersistenceImpl)p).setRepository(repository);
+		Assert.assertFalse(p.change(desc));		
 	}
 	
 	@Test
@@ -431,6 +549,20 @@ public class PersistenceTest {
 		
 		public int getHits() {
 			return hit;
+		}
+	}
+
+	
+	/**
+	 * need this indirection class as the easy mock version in orbit is below 3 (mocking of a class).
+	 * @author swieland
+	 *
+	 */
+	private class CreatorMockException extends RepositoryFactoryDelegate {
+		
+		@Override
+		public Repository create(Map<String, String> args) throws PersistenceException {
+			throw new PersistenceException("MOCK EXCEPTION");
 		}
 	}
 }

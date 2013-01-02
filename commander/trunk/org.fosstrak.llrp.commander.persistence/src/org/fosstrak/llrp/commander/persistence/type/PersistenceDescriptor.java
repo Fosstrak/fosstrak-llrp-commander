@@ -21,6 +21,8 @@
 
 package org.fosstrak.llrp.commander.persistence.type;
 
+import org.apache.commons.lang.StringUtils;
+
 
 /**
  * wrapper describing the underlying persistence repository attributes.
@@ -38,6 +40,16 @@ public class PersistenceDescriptor {
 	private  String jdbc;
 	private  String implementingClass;
 
+	/**
+	 * create a descriptor.
+	 * @param wipeDbAtStartup whether to wipe the database at startup.
+	 * @param wipeRoAccessDbAtStartup
+	 * @param logRoAccess whether to log RO ACCESS reports.
+	 * @param username user name to the database.
+	 * @param password password to the database.
+	 * @param jdbc JDBC connector if JDBC shall be used.
+	 * @param implementingClass class of the desired repository.
+	 */
 	public PersistenceDescriptor(boolean wipeDbAtStartup, boolean wipeRoAccessDbAtStartup, boolean logRoAccess, String username, String password, String jdbc, String implementingClass) {
 		this.wipeDbAtStartup = wipeDbAtStartup;
 		this.wipeRoAccessDbAtStartup = wipeRoAccessDbAtStartup;
@@ -48,31 +60,59 @@ public class PersistenceDescriptor {
 		this.implementingClass = implementingClass;
 	}
 	
+	/**
+	 * @return whether to wipe the database at startup.
+	 */
 	public boolean isWipeDbAtStartup() {
 		return wipeDbAtStartup;
 	}
 
+	/**
+	 * @return whether to wipe the RO access reports repository at startup.
+	 */
 	public boolean isWipeRoAccessDbAtStartup() {
 		return wipeRoAccessDbAtStartup;
 	}
 
+	/**
+	 * @return user name to the database.
+	 */
 	public String getUsername() {
 		return username;
 	}
 
+	/**
+	 * @return password to the database.
+	 */
 	public String getPassword() {
 		return password;
 	}
 
+	/**
+	 * @return JDBC connector if JDBC shall be used.
+	 */
 	public String getJdbc() {
 		return jdbc;
 	}
 
+	/**
+	 * @return class of the desired repository.
+	 */
 	public String getImplementingClass() {
 		return implementingClass;
 	}
 
+	/**
+	 * @return whether to log RO ACCESS reports.
+	 */
 	public boolean isLogRoAccess() {
 		return logRoAccess;
+	}
+	
+	/**
+	 * @return a dummy persistence descriptor.
+	 */
+	public static final PersistenceDescriptor dummy() {
+		return new PersistenceDescriptor(true, true, true, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY, StringUtils.EMPTY);
 	}
 }
