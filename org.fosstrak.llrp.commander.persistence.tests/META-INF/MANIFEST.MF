@@ -8,7 +8,8 @@ Require-Bundle: org.fosstrak.llrp.llrp-adaptor-integration;bundle-version="1.1.1
  org.fosstrak.llrp.commander.llrpaccess;bundle-version="1.1.1",
  org.fosstrak.llrp.commander.persistence;bundle-version="1.1.1",
  org.junit,
- org.easymock;bundle-version="2.4.0"
+ org.easymock;bundle-version="2.4.0",
+ org.eclipse.equinox.p2.core;bundle-version="2.2.0"
 Import-Package: org.apache.log4j
 Bundle-Vendor: ETH Zurich
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

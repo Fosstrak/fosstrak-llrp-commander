@@ -391,7 +391,7 @@ public final class ResourceCenter {
 			IFolder dbFolder = project.getFolder(ResourceCenter.DB_SUBFOLDER);
 			
 			String dbLocation = myWorkspaceRoot.getLocation().toString() + dbFolder.getFullPath().toString() + "/";
-			System.setProperty("org.fosstrak.llrp.commander.persistence.defaultDbLocation", dbLocation);
+			System.setProperty(PersistenceImpl.DB_STORE_LOCATION, dbLocation);
 			
 			log.info("using db location: " + dbLocation);
 			IPreferenceStore store = LLRPPlugin.getDefault().getPreferenceStore();
