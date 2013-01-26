@@ -23,14 +23,13 @@ package org.fosstrak.llrp.commander.llrpaccess.impl;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
-import org.fosstrak.llrp.adaptor.Adaptor;
 import org.fosstrak.llrp.adaptor.AdaptorManagement;
-import org.fosstrak.llrp.adaptor.Reader;
-import org.fosstrak.llrp.adaptor.ReaderMetaData;
 import org.fosstrak.llrp.adaptor.config.FileStoreConfiguration;
 import org.fosstrak.llrp.adaptor.exception.LLRPRuntimeException;
 import org.fosstrak.llrp.client.LLRPExceptionHandler;
@@ -38,6 +37,7 @@ import org.fosstrak.llrp.client.MessageHandler;
 import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
 import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 import org.fosstrak.llrp.commander.llrpaccess.type.AdaptorManagementDelegate;
+import org.fosstrak.llrp.commander.type.ReaderMetaData;
 import org.llrp.ltk.types.LLRPMessage;
 
 /**
@@ -51,11 +51,11 @@ public class LLRPAccessImpl implements LLRPAccess {
 
 	private static final String CAUGHT_EXCEPTION = "caught exception";
 	
+	
 	/** the logger. */
 	private static final Logger LOG = Logger.getLogger(LLRPAccessImpl.class);
-
-	@Override
-	public Reader getReader(String adapterName, String readerName) throws LLRPAccessException {
+	
+	private org.fosstrak.llrp.adaptor.Reader getReaderInternal(String adapterName, String readerName) throws LLRPAccessException {
 		try {
 			return getMgmt().getAdaptor(adapterName).getReader(readerName);
 		} catch (Exception e) {
@@ -67,8 +67,14 @@ public class LLRPAccessImpl implements LLRPAccess {
 	@Override
 	public ReaderMetaData getReaderMetaData(String adapterName, String readerName) throws LLRPAccessException {
 		try {
-			return getReader(adapterName, readerName).getMetaData();
+			org.fosstrak.llrp.adaptor.ReaderMetaData metaData = getReaderInternal(adapterName, readerName).getMetaData();
+			ReaderMetaData meta = new ReaderMetaData();
+			BeanUtils.copyProperties(meta, metaData);
+			return meta;
 		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (Exception e) {
 			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
@@ -77,7 +83,7 @@ public class LLRPAccessImpl implements LLRPAccess {
 	@Override
 	public void setReaderReportKeepalive(String adapterName, String readerName, boolean keepAlive) throws LLRPAccessException {
 		try {
-			getReader(adapterName, readerName).setReportKeepAlive(keepAlive);
+			getReaderInternal(adapterName, readerName).setReportKeepAlive(keepAlive);
 		} catch (RemoteException e) {
 			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
@@ -87,11 +93,55 @@ public class LLRPAccessImpl implements LLRPAccess {
 	@Override
 	public boolean isReaderReportKeepalive(String adapterName, String readerName) throws LLRPAccessException {
 		try {
-			return getReader(adapterName, readerName).isReportKeepAlive();
+			return getReaderInternal(adapterName, readerName).isReportKeepAlive();
 		} catch (RemoteException e) {
 			LOG.debug(CAUGHT_EXCEPTION, e);
 			throw new LLRPAccessException(e);
 		}
+	}
+
+	@Override
+	public boolean isReaderConnected(String adapterName, String readerName)
+			throws LLRPAccessException {
+		try {
+			return getReaderInternal(adapterName, readerName).isConnected();
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
+	}
+
+	@Override
+	public boolean containsReader(String adaptorName, String readerName) throws LLRPAccessException {
+		try {
+			if (containsAdapter(adaptorName)) {
+				return getMgmt().getAdaptor(adaptorName).containsReader(readerName);
+			}
+			return false;
+		} catch (LLRPRuntimeException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
+	}
+
+	@Override
+	public List<String> getReaderNames(String adapterName) throws LLRPAccessException {
+		List<String> readerNames = new LinkedList<String>();
+		try {
+			if (getMgmt().containsAdaptor(adapterName)) {
+				readerNames.addAll(getMgmt().getAdaptor(adapterName).getReaderNames());
+			}
+		} catch (LLRPRuntimeException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
+		return readerNames;
 	}
 
 	@Override
@@ -125,16 +175,6 @@ public class LLRPAccessImpl implements LLRPAccess {
 	}
 
 	@Override
-	public Adaptor getAdapter(String adaptorName) throws LLRPAccessException {
-		try {
-			return getMgmt().getAdaptor(adaptorName);
-		} catch (LLRPRuntimeException e) {
-			LOG.debug(CAUGHT_EXCEPTION, e);
-			throw new LLRPAccessException(e);
-		}
-	}
-
-	@Override
 	public List<String> getAdaptorNames() throws LLRPAccessException {
 		try {
 			return getMgmt().getAdaptorNames();
@@ -145,13 +185,13 @@ public class LLRPAccessImpl implements LLRPAccess {
 	}
 
 	@Override
-	public Adaptor getDefaultAdaptor() throws LLRPAccessException {
-		try {
-			return getMgmt().getDefaultAdaptor();
-		} catch (LLRPRuntimeException e) {
-			LOG.debug(CAUGHT_EXCEPTION, e);
-			throw new LLRPAccessException(e);
-		}
+	public String getDefaultAdaptorName() throws LLRPAccessException {
+		return AdaptorManagement.DEFAULT_ADAPTOR_NAME;
+	}
+
+	@Override
+	public boolean isDefaultAdapter(String adapterName) {
+		return AdaptorManagement.DEFAULT_ADAPTOR_NAME.equalsIgnoreCase(adapterName);
 	}
 
 	@Override
@@ -167,6 +207,30 @@ public class LLRPAccessImpl implements LLRPAccess {
 	@Override
 	public void disconnectReaders() {
 		getMgmt().disconnectReaders();
+	}
+
+	@Override
+	public void connectReader(String adapterName, String readerName, boolean clientInitiatedConnection) throws LLRPAccessException {
+		try {
+			getReaderInternal(adapterName, readerName).connect(clientInitiatedConnection);
+		} catch (LLRPRuntimeException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
+	}
+
+	@Override
+	public void disconnectReader(String adapterName, String readerName)
+			throws LLRPAccessException {
+		try {
+			getReaderInternal(adapterName, readerName).disconnect();
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
 	}
 
 	@Override
@@ -236,6 +300,48 @@ public class LLRPAccessImpl implements LLRPAccess {
 	 */
 	public void setDelegate(AdaptorManagementDelegate delegate) {
 		this.delegate = delegate;
+	}
+
+	@Override
+	public void undefineReader(String adapterName, String readerName) throws LLRPAccessException {
+		try {
+			getMgmt().getAdaptor(adapterName).undefine(readerName);
+		} catch (LLRPRuntimeException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
+	}
+
+	@Override
+	public void defineReader(String adapterName, String readerName, String ip,
+			int port, boolean clientInitiated, boolean connectImmediately)
+			throws LLRPAccessException {
+		try {
+			getMgmt().getAdaptor(adapterName).define(readerName, ip, port, clientInitiated, connectImmediately);					
+		} catch (LLRPRuntimeException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
+	}
+
+	@Override
+	public void connectReader(String adapterName, String readerName) throws LLRPAccessException {
+		try {
+			org.fosstrak.llrp.adaptor.Reader reader = getReaderInternal(adapterName, readerName);
+			reader.connect(reader.isClientInitiated());
+		} catch (LLRPRuntimeException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		} catch (RemoteException e) {
+			LOG.debug(CAUGHT_EXCEPTION, e);
+			throw new LLRPAccessException(e);
+		}
 	}
 
 }

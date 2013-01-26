@@ -21,11 +21,9 @@
 
 package org.fosstrak.llrp.commander.dialogs;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,8 +49,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
-import org.fosstrak.llrp.adaptor.Adaptor;
 import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
 import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 import org.llrp.ltk.types.LLRPMessage;
 
@@ -156,28 +154,20 @@ public class SendMessageDialog extends org.eclipse.jface.dialogs.Dialog {
 		columnAdapter.setText ("Adapter");
 		TableColumn columnReader = new TableColumn (tblReaders, SWT.NONE);
 		columnReader.setText ("Reader");
-
+		
+		LLRPAccess llrpAccess = ResourceCenter.getInstance().getLLRPAccess();
 		try {
-			Iterator<String> i = ResourceCenter.getInstance().getLLRPAccess().getAdaptorNames().iterator();
-			while (i.hasNext()) {
-				Adaptor adaptor = ResourceCenter.getInstance().getLLRPAccess().getAdapter(i.next());
-
-				Iterator<String> j = adaptor.getReaderNames().iterator();
-				while (j.hasNext()) {
-					String readerName = j.next();
-					if (adaptor.getReader(readerName).isConnected()) {
-						
+			for (String adapterName : llrpAccess.getAdaptorNames()) {
+				for (String readerName : llrpAccess.getReaderNames(adapterName)) {
+					if (llrpAccess.isReaderConnected(adapterName, readerName)) {
 						TableItem item = new TableItem (tblReaders, 0);
-						String adapter = adaptor.getAdaptorName();
-						item.setText(0, adapter);
+						item.setText(0, adapterName);
 						item.setText(1, readerName);
 					}
 				}
 			}
 		} catch (LLRPAccessException llrpe) {
 			log.debug("issue while reading the names for reader and adaptors", llrpe);
-		} catch (RemoteException re) {
-			log.debug("issue while reading the names for reader and adaptors", re);
 		}
 		
 		// for all the currently available readers, check if they have been
