@@ -45,7 +45,7 @@ public class ConfigurationModel {
 			"<llrp:GPOPortNum>", "<llrp:ADD_ROSPEC>", "<llrp:ROSpec>",
 			"<llrp:Priority>", "<llrp:CurrentState>" };
 
-	private ArrayList<String> reservedWords;
+	private List<String> reservedWords;
 	
 	private Properties properties;
 	private String rootLogger;

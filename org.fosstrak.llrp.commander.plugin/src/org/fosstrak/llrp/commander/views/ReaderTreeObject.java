@@ -22,6 +22,7 @@
 package org.fosstrak.llrp.commander.views;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -31,7 +32,7 @@ import java.util.ArrayList;
 */
 public class ReaderTreeObject extends MessageBoxTreeObject {
 	
-	private ArrayList<MessageBoxTreeObject> children;
+	private List<MessageBoxTreeObject> children;
 	
 	private boolean isConnected;
 	private boolean isReader;

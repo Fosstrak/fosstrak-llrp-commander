@@ -22,7 +22,7 @@
 package org.fosstrak.llrp.commander.check;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * This HealthCheck maintain a chain of <code>CheckItem</code>.
@@ -35,7 +35,7 @@ import java.util.Iterator;
  */
 public class HealthCheck extends CheckItem {
 
-	private ArrayList<CheckItem> checkList;
+	private List<CheckItem> checkList;
 	
 	/**
 	 * Default Constructor.
@@ -56,17 +56,12 @@ public class HealthCheck extends CheckItem {
 	 * Validate each check item in the chain.
 	 */
 	public boolean validate() {
-		
 		boolean isHealth = true;
 		this.clearAllReport();
-		
-		Iterator<CheckItem> i = checkList.iterator();
-		while (i.hasNext()) {
-			CheckItem item = i.next();
+		for (CheckItem item : checkList) {
 			isHealth = isHealth && item.validate();
 			this.addReportItem(item.getReport());
 		}
-		
 		return isHealth;
 	}
 	
@@ -74,12 +69,8 @@ public class HealthCheck extends CheckItem {
 	 * Execute <code>fix</code> function of each check item in the chain
 	 */
 	public  void fix() {
-		
 		this.clearAllReport();
-		
-		Iterator<CheckItem> i = checkList.iterator();
-		while (i.hasNext()) {
-			CheckItem item = i.next();
+		for (CheckItem item : checkList) {
 			if (!item.validate()) {
 				item.fix();
 				this.addReportItem(item.getReport());
