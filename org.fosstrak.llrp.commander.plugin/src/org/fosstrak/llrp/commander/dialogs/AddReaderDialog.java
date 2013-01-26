@@ -81,15 +81,11 @@ public class AddReaderDialog extends ConnectDialog {
 		// make sure, we propose a unique reader name
 		String readerName = String.format("ReaderName%d", num++);
 		try {
-			while (ResourceCenter.getInstance().getLLRPAccess().getAdapter(
-					AdaptorManagement.DEFAULT_ADAPTOR_NAME).containsReader(
-							readerName)) {
-				
+			while (ResourceCenter.getInstance().getLLRPAccess().containsReader(AdaptorManagement.DEFAULT_ADAPTOR_NAME, readerName)) {
 				readerName = String.format("ReaderName%d", num++);
 			}
 		} catch (Exception e) {
-			readerName = String.format("ReaderName%d", 
-					System.currentTimeMillis());
+			readerName = String.format("ReaderName%d", System.currentTimeMillis());
 		}
 		setFieldsDefaultValues(new String [] { 	readerName, "127.0.0.1", "5084" });
 	}
@@ -197,9 +193,7 @@ public class AddReaderDialog extends ConnectDialog {
 						// - name shorter than 3
 						// - name that is already contained
 						if ((txt.getText() == null) || (txt.getText().length() < 3) || 
-								(ResourceCenter.getInstance().getLLRPAccess().
-										getAdapter(AdaptorManagement.DEFAULT_ADAPTOR_NAME).
-											containsReader(txt.getText()))) {
+								(ResourceCenter.getInstance().getLLRPAccess().containsReader(AdaptorManagement.DEFAULT_ADAPTOR_NAME, txt.getText()))) {
 							ok.setEnabled(false);
 							
 						} else {

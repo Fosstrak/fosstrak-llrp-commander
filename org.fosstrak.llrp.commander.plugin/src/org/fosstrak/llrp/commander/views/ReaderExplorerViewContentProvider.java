@@ -21,18 +21,16 @@
 
 package org.fosstrak.llrp.commander.views;
 
-import java.rmi.RemoteException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.fosstrak.llrp.adaptor.Adaptor;
 import org.fosstrak.llrp.client.Constants;
 import org.fosstrak.llrp.commander.ResourceCenter;
+import org.fosstrak.llrp.commander.llrpaccess.LLRPAccess;
 import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 
 
@@ -177,35 +175,24 @@ public class ReaderExplorerViewContentProvider implements
 		ReaderTreeObject rootAdapters = new ReaderTreeObject(
 				Constants.ROOT_NAME);
 		
+		LLRPAccess llrpAccess = ResourceCenter.getInstance().getLLRPAccess();
 		log.debug("Retrieving Adaptor Lists from Adapter Management");
 		try {
-			List<String> adaptorList = ResourceCenter.getInstance().getLLRPAccess().getAdaptorNames();
-			Iterator<String> i = adaptorList.iterator();
-			while (i.hasNext()) {
-				String adaptorName = i.next();
-				
-				log.debug("Get Adaptor-" + adaptorName + " ...");
-				Adaptor adaptor = ResourceCenter.getInstance().getLLRPAccess().getAdapter(adaptorName);
-				
-				List<String> readerList = adaptor.getReaderNames();
+			for (String adapterName : ResourceCenter.getInstance().getLLRPAccess().getAdaptorNames() ) {
+				log.debug("Get Adaptor-" + adapterName + " ...");
+				List<String> readerList = llrpAccess.getReaderNames(adapterName);
 				if (readerList.size() == 0) {
 					// add empty adaptor
-					getAdapterNode(rootAdapters, adaptorName);
+					getAdapterNode(rootAdapters, adapterName);
 				} else {
-					Iterator<String> j = readerList.iterator();
-					while (j.hasNext()) {
-						String readerName = j.next();
-						
-						addReader(rootAdapters, adaptorName, readerName, adaptor.getReader(readerName).isConnected());
+					for (String readerName : readerList) {
+						addReader(rootAdapters, adapterName, readerName, llrpAccess.isReaderConnected(adapterName, readerName));
 					}
 				}
 			}
 		} catch (LLRPAccessException llrpe) {
 			log.debug("could not initialize the adapter/reader tree", llrpe);
-		} catch (RemoteException re) {
-			log.debug("could not initialize the adapter/reader tree", re);
 		}
-		
 
 		invisibleRoot = new ReaderTreeObject("");
 		invisibleRoot.addChild(rootAdapters);

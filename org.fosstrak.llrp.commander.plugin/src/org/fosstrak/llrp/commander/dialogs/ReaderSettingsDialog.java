@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.fosstrak.llrp.adaptor.ReaderMetaData;
+import org.fosstrak.llrp.commander.type.ReaderMetaData;
 import org.fosstrak.llrp.commander.ResourceCenter;
 import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
 

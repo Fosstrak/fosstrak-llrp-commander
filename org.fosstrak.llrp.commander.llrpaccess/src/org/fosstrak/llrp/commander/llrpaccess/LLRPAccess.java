@@ -23,12 +23,10 @@ package org.fosstrak.llrp.commander.llrpaccess;
 
 import java.util.List;
 
-import org.fosstrak.llrp.adaptor.Adaptor;
-import org.fosstrak.llrp.adaptor.Reader;
-import org.fosstrak.llrp.adaptor.ReaderMetaData;
 import org.fosstrak.llrp.client.LLRPExceptionHandler;
 import org.fosstrak.llrp.client.MessageHandler;
 import org.fosstrak.llrp.commander.llrpaccess.exception.LLRPAccessException;
+import org.fosstrak.llrp.commander.type.ReaderMetaData;
 import org.llrp.ltk.types.LLRPMessage;
 
 /**
@@ -38,17 +36,6 @@ import org.llrp.ltk.types.LLRPMessage;
  *
  */
 public interface LLRPAccess {
-	
-	// FIXME: we must introduce an additional layer with DTOs that mask away the ugly remote exception stuff for the gui... 
-	
-	/**
-	 * returns the requested reader on the given adapter.
-	 * @param adapterName the name of the enclosing adapter.
-	 * @param readerName the name of the requested reader.
-	 * @return the reader or null if not found.
-	 * @throws LLRPAccessException when the chosen operation failed.
-	 */
-	Reader getReader(String adapterName, String readerName) throws LLRPAccessException;
 	
 	/**
 	 * returns the requested reader meta data on the given adapter.
@@ -78,6 +65,76 @@ public interface LLRPAccess {
 	boolean isReaderReportKeepalive(String adapterName, String readerName) throws LLRPAccessException;
 	
 	/**
+	 * whether the requested reader is connected or not.
+	 * @param adapterName the name of the enclosing adapter.
+	 * @param readerName the name of the requested reader.
+	 * @return true if connected, false otherwise.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	boolean isReaderConnected(String adapterName, String readerName) throws LLRPAccessException;
+	
+	/**
+	 * connects this reader.
+	 * @param adapterName the name of the adapter enclosing the reader.
+	 * @param readerName the name of the reader to connect.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	void connectReader(String adapterName, String readerName) throws LLRPAccessException;
+	
+	/**
+	 * connects this reader.
+	 * @param adapterName the name of the adapter enclosing the reader.
+	 * @param readerName the name of the reader to connect.
+	 * @param clientInitiatedConnection if the connection is initiated by the client then you should pass true. if the physical reader initiates the connection then provide false.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	void connectReader(String adapterName, String readerName, boolean clientInitiatedConnection) throws LLRPAccessException;
+	
+	/**
+	 * disconnects this reader.
+	 * @param adapterName the name of the adapter enclosing the reader.
+	 * @param readerName the name of the reader to connect.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	void disconnectReader(String adapterName, String readerName) throws LLRPAccessException;
+	
+	/**
+	 * tells whether a reader already exists on an enclosing adapter.
+	 * @param adapterName the name of the enclosing adaptor.
+	 * @param readerName the name of the reader to check.
+	 * @return true if reader exists else false.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	boolean containsReader(String adapterName, String readerName) throws LLRPAccessException;
+	
+	/**
+	 * get the names of all the readers enclosed by this adapter.
+	 * @param adapterName the name of the enclosing adapter.
+	 * @return a list of all the reader names on this adapter.
+	 */
+	List<String> getReaderNames(String adapterName) throws LLRPAccessException;
+
+	/**
+	 * undefine the given reader.
+	 * @param adapterName the adapter where the reader is stored on.
+	 * @param readerName then name of the reader to be undefined.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	void undefineReader(String adapterName, String readerName) throws LLRPAccessException;
+
+	/**
+	 * define a new reader on the given adapter.
+	 * @param adapterName the adapter where to define the reader on.
+	 * @param readerName the new readers name.
+	 * @param ip the IP of the reader.
+	 * @param port the port.
+	 * @param clientInitiated client initiates the connection when set to true.
+	 * @param connectImmediately connect to the reader immediately after connection when set to true.
+	 * @throws LLRPAccessException when the chosen operation failed.
+	 */
+	void defineReader(String adapterName, String readerName, String ip, int port, boolean clientInitiated, boolean connectImmediately) throws LLRPAccessException;
+	
+	/**
 	 * tells whether an adapter already exists.
 	 * @param adapterName the name of the adaptor to check.
 	 * @return true if adaptor exists else false.
@@ -102,14 +159,6 @@ public interface LLRPAccess {
 	void undefineAdapter(String adapterName) throws LLRPAccessException;
 	
 	/**
-	 * returns an adapter to a given adapterName.
-	 * @param adapterName the name of the requested adapter.
-	 * @return an adapter to a given adapterName.
-	 * @throws LLRPAccessException when the chosen operation failed.
-	 */
-	Adaptor getAdapter(String adapterName) throws LLRPAccessException;
-
-	/**
 	 * returns a list of all the available adapter names.
 	 * @return a list of all the available adapter names.
 	 * @throws LLRPAccessException when the chosen operation failed.
@@ -117,11 +166,17 @@ public interface LLRPAccess {
 	List<String> getAdaptorNames() throws LLRPAccessException;
 	
 	/**
-	 * helper to access the default local adapter more convenient.
-	 * @return the default local adapter.
-	 * @throws LLRPAccessException when the chosen operation failed.
+	 * helper to access the default local adapter name more convenient.
+	 * @return the default local adapters name.
 	 */
-	Adaptor getDefaultAdaptor() throws LLRPAccessException;
+	String getDefaultAdaptorName() throws LLRPAccessException;
+
+	/**
+	 * checks, whether a given adapter is a the default adapter or not.
+	 * @param adapterName the name of the adapter to check.
+	 * @return true if the adapter is default adapter, false otherwise.
+	 */
+	boolean isDefaultAdapter(String adapterName);
 	
 	/**
 	 * checks, whether a given adapter is a local adapter or not.
