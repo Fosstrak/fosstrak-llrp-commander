@@ -22,7 +22,6 @@
 package org.fosstrak.llrp.commander.util;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.swt.graphics.Color;
@@ -51,9 +50,9 @@ public class ColorManager {
 	 * Dispose all the <code>Color</code> in the Color Table.
 	 */
 	public void dispose() {
-		Iterator<Color> e = fColorTable.values().iterator();
-		while (e.hasNext())
-			 e.next().dispose();
+		for (Color e : fColorTable.values()) {
+			 e.dispose();
+		}
 	}
 	
 	/**

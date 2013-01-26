@@ -22,6 +22,7 @@
 package org.fosstrak.llrp.commander.check;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
 * Common interface that helps to run "check-processes" (processes that shall 
@@ -37,7 +38,7 @@ public abstract class CheckItem {
 	public final static int CATEGORY_WARN = 3;
 	public final static int CATEGORY_INFO = 4;
 	
-	private ArrayList<String> report;
+	private List<String> report;
 	
 	public CheckItem() {
 		report = new ArrayList<String>();
@@ -69,7 +70,7 @@ public abstract class CheckItem {
 	 * adds a list of error reports to the current error list.
 	 * @param aItemList new errors to add.
 	 */
-	public void addReportItem(ArrayList<String> aItemList) {
+	public void addReportItem(List<String> aItemList) {
 		report.addAll(aItemList);
 	}
 	
@@ -83,7 +84,7 @@ public abstract class CheckItem {
 	/**
 	 * @return a list of error messages (if the check went wrong) that describe the errors.
 	 */
-	public ArrayList<String> getReport() {
+	public List<String> getReport() {
 		return report;
 	}
 	

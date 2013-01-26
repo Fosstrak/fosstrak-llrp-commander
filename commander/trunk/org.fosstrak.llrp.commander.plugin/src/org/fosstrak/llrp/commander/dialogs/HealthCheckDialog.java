@@ -21,8 +21,6 @@
 
 package org.fosstrak.llrp.commander.dialogs;
 
-import java.util.Iterator;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -110,9 +108,8 @@ public class HealthCheckDialog extends org.eclipse.jface.dialogs.Dialog {
 		    	  outputList.removeAll();
 		    	  
 		    	  if (!getHealthCheck().validate()) {
-		    		  Iterator<String> i = getHealthCheck().getReport().iterator();
-		    		  while (i.hasNext()) {
-		    			  outputList.add(i.next());
+		    		  for (String element : getHealthCheck().getReport()) {
+		    			  outputList.add(element);
 		    		  }
 		    		  btnFix.setEnabled(true);
 		    	  }
@@ -135,10 +132,8 @@ public class HealthCheckDialog extends org.eclipse.jface.dialogs.Dialog {
 		    	  if (!getHealthCheck().validate()) {
 		    		  
 		    		  getHealthCheck().fix();
-		    		  
-		    		  Iterator<String> i = getHealthCheck().getReport().iterator();
-		    		  while (i.hasNext()) {
-		    			  outputList.add(i.next());
+		    		  for (String element : getHealthCheck().getReport()) {
+		    			  outputList.add(element);
 		    		  }
 		    		  btnFix.setEnabled(true);
 		    	  }
